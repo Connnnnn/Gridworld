@@ -8,8 +8,6 @@ from Environment import Environment
 class Grid:
     def __init__(
             self,
-            x=[],
-            y=[],
             results=[],
             QTables=[],
             numRuns=10,
@@ -19,8 +17,6 @@ class Grid:
         self.results = results
         self.QTables = QTables
         self.experimentName = experimentName
-        self.x = x
-        self.y = y
 
     def run(self):
 

@@ -13,7 +13,7 @@ class Environment:
             numEpisodes=1000,
             maxTimesteps=100,
             goalReached=False,
-            goalLocationXY=(6, 6),
+            goalLocationXY=[6, 6],
             agentStartXY=[2, 2],
             goalReward=10.0,
             stepPenalty=-1.0,
@@ -21,7 +21,7 @@ class Environment:
             debug=False,
 
             currentAgentCoords=[-1, -1],
-            previousAgentCoords=(-1. - 1),
+            previousAgentCoords=[-1 - 1],
             alpha=0.1,
             alphaDecays=False,
             alphaDecayRate=0.9,

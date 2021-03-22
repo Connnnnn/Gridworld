@@ -35,6 +35,7 @@ class Utilities:
         return stateNo
 
     def getXYfromStateNo(self, stateNo, basesForStateNo):
+
         state = [0] * 3
         inputstateNo = stateNo
         for i in range(len(state) - 1, -1):
