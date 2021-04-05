@@ -9,6 +9,7 @@ obstacles = [
     [0, 0, 1, 0, 0],
 ]
 
+##Start pos = 4,0 4,4
 
 # 0,2 and 4,2
 
@@ -152,11 +153,11 @@ class Environment:
                 # print(currentStateNo)
                 selectedAction = self.agent.selectAction(currentStateNo)
                 previousAgentCoords = self.currentAgent1Coords
-                currentAgentCoords = self.getNextStateXY(previousAgentCoords, selectedAction)
+                self.currentAgent1Coords = self.getNextStateXY(previousAgentCoords, selectedAction)
                 # print(currentAgentCoords)
-                reward = self.calculateReward(previousAgentCoords, selectedAction, currentAgentCoords, a)
+                reward = self.calculateReward(previousAgentCoords, selectedAction, self.currentAgent1Coords, a)
 
-                nextStateNo = getStateNoFromXY(state=currentAgentCoords,
+                nextStateNo = getStateNoFromXY(state=self.currentAgent1Coords,
                                                basesForStateNo=[self.xDimension, self.yDimension])
                 self.agent.updateQValue(currentStateNo, selectedAction, nextStateNo, reward)
 
@@ -189,6 +190,7 @@ class Environment:
                 self.goalReached = True
             else:
                 reward = self.stepPenalty
+
         return reward
 
     def getNextStateXY(self, currentStateXY, action):
@@ -223,9 +225,9 @@ class Environment:
 
         # print("  df "+str(obstacles[currentStateXY[0]][currentStateXY[1]]))
         if obstacles[currentStateXY[0]][currentStateXY[1]] == 1:
-            print("not allowed")  # don't move agent into new position
+
             nextStateXY = [currentStateXY[0], currentStateXY[1]]
-        # print(nextStateXY)
+
         return nextStateXY
 
     def getNumStates(self):
