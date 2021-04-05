@@ -1,7 +1,6 @@
 import os
 import time
-from Agent import Agent
-from Utilities import Utilities
+from Utilities import *
 from Environment import Environment
 
 
@@ -28,17 +27,17 @@ class Grid:
         env = Environment()
 
         for run in range(0, self.numRuns):
-            print("\nExpRunner: *************** Run " + str(run) + " starting ***************")
+            print("\nGridWorld: *************** Run " + str(run) + " starting ***************")
 
             env.doExperiment()
 
             self.results.append(env.getMovesToGoal())
             self.QTables.append(env.getQTable())
 
-        Utilities.resultsToCSVFile(self.results, self.experimentName)
-        Utilities.QTablesToFile(self.QTables,
-                                basesForStateNo=[Environment.getXDimension(env), Environment.getYDimension(env)],
-                                experimentName=self.experimentName)
+        resultsToCSVFile(results=self.results, experimentName=self.experimentName)
+        QTablesToFile(QTables=self.QTables,
+                      basesForStateNo=[Environment.getXDimension(env), Environment.getYDimension(env)],
+                      experimentName=self.experimentName)
 
 
 if __name__ == '__main__':

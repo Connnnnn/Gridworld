@@ -1,6 +1,13 @@
+import sys
+
 import numpy as np
 import copy
 import random
+
+
+def initialiseQvalues(numStates, numActions):
+
+    return [[0.0 for i in range(numActions)] for j in range(numStates)]
 
 
 class Agent:
@@ -22,22 +29,22 @@ class Agent:
         self.epsilon = epsilon
         self.debug = debug
 
-    def initialiseQvalues(self, numStates, numActions):
-
-        return [[0.0 for i in range(numActions)] for j in range(numStates)]
-
     def getMaxQValue(self, state):
         maxIndex = self.getMaxValuedAction(state)
         return self.qTable[state][maxIndex]
 
     def getMaxValuedAction(self, state):
         maxIndex = -1
-        maxValue = -float('inf')
+        maxValue = -sys.float_info.max
+        print("start")
         for action in range(0, self.numActions):
+            print(str(action)+" = "+str(self.qTable[state][action]))
             if self.qTable[state][action] > maxValue:
+                print(maxValue)
                 maxIndex = action
                 maxValue = self.qTable[state][action]
-
+                print(maxValue)
+        print("end")
         return maxIndex
 
     def updateQValue(self, previousState, selectedAction, currentState, reward):
@@ -55,12 +62,14 @@ class Agent:
             print("Agent: selecting action, epsilon=" + str(self.epsilon) + ", randomValue=" + str(randomValue))
 
         if randomValue < self.epsilon:
+            print("Random")
             selectedAction = self.selectRandomAction()
         if self.debug:
             print("Agent: selected action " + str(selectedAction) + " at random")
 
         else:
             selectedAction = self.getMaxValuedAction(state)
+            print("Max value")
             if self.debug:
                 print("Agent: selected action " + str(selectedAction) + " greedily")
 
@@ -95,30 +104,7 @@ class Agent:
 
     def copyQTable(self, agent):
 
-        # print("NA" + str(agent.numActions))
-        # # Test 1
-        #st = self.qTable[0][0]
-        #print(st)
-        #
-        # # Test 2
-        # for s in self.qTable:
-        #     r = float(s)
-        #     print(r)
-        #
-        # # Test 3
-        # # copy = [agent.numStates][agent.numActions]
-        # for s in range(0, self.numStates):
-        #     for a in range(0, self.numActions):
-        #         copy[s][a] = self.qTable[s][a]
-        #
-        # # Test 4
-        # destArray = [row[:] for row in self.qTable]
-        # print(str(destArray[1, 1]))
-
-        # Test 5
         copyQTable = copy.deepcopy(self.qTable)
-        #print(copyQTable[0][0])
-
         return copyQTable
 
     def setQtable(self, values):

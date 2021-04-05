@@ -1,6 +1,18 @@
-from Agent import Agent
-from Utilities import Utilities
+from Agent import *
+from Utilities import *
 
+obstacles = [
+    [0, 0, 1, 0, 0],
+    [0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0],
+    [0, 0, 1, 0, 0],
+]
+
+
+# 0,2 and 4,2
+
+# obstacles = [[[0], [0], [1], [0], [0]], [[0], [0], [0], [0], [0]], [[0], [0], [0], [0], [0]], [[0], [0], [0], [0], [0]], [[0], [0], [1], [0], [0]]]
 
 class Environment:
 
@@ -13,15 +25,19 @@ class Environment:
             numEpisodes=1000,
             maxTimesteps=100,
             goalReached=False,
-            goalLocationXY=[6, 6],
-            agentStartXY=[2, 2],
+            goal1LocationXY=None,
+            goal2LocationXY=None,
+            agent1StartXY=None,
+            agent2StartXY=None,
             goalReward=10.0,
             stepPenalty=-1.0,
-
+            numAgents=2,
             debug=False,
 
-            currentAgentCoords=[-1, -1],
-            previousAgentCoords=[-1 - 1],
+            currentAgent1Coords=None,
+            previousAgent1Coords=None,
+            currentAgent2Coords=None,
+            previousAgent2Coords=None,
             alpha=0.1,
             alphaDecays=False,
             alphaDecayRate=0.9,
@@ -29,8 +45,30 @@ class Environment:
             epsilon=0.1,
             epsilonDecays=False,
             epsilonDecayRate=0.9,
-            movesToGoal=[]
+            movesToGoal=None
     ):
+
+        if agent1StartXY is None:
+            agent1StartXY = [4, 0]
+        if agent2StartXY is None:
+            agent2StartXY = [4, 4]
+
+        if goal1LocationXY is None:
+            goal1LocationXY = [0, 4]
+        if goal2LocationXY is None:
+            goal2LocationXY = [0, 0]
+
+        if currentAgent1Coords is None:
+            currentAgent1Coords = [-1, -1]
+        if previousAgent1Coords is None:
+            previousAgent1Coords = [-1 - 1]
+        if currentAgent2Coords is None:
+            currentAgent2Coords = [-1, -1]
+        if previousAgent2Coords is None:
+            previousAgent2Coords = [-1 - 1]
+
+        if movesToGoal is None:
+            movesToGoal = []
 
         self.agent = None
         self.numActions = numActions
@@ -40,14 +78,19 @@ class Environment:
         self.numEpisodes = numEpisodes
         self.maxTimesteps = maxTimesteps
         self.debug = debug
+        self.numAgents = numAgents
         self.goalReached = goalReached
-        self.goalLocationXY = goalLocationXY
-        self.agentStartXY = agentStartXY
+        self.goal1LocationXY = goal1LocationXY
+        self.agent1StartXY = agent1StartXY
+        self.goal2LocationXY = goal2LocationXY
+        self.agent2StartXY = agent2StartXY
         self.goalReward = goalReward
         self.stepPenalty = stepPenalty
 
-        self.currentAgentCoords = currentAgentCoords
-        self.previousAgentCoords = previousAgentCoords
+        self.currentAgent1Coords = currentAgent1Coords
+        self.previousAgent1Coords = previousAgent1Coords
+        self.currentAgent2Coords = currentAgent2Coords
+        self.previousAgent2Coords = previousAgent2Coords
         self.alpha = alpha
         self.alphaDecays = alphaDecays
         self.alphaDecayRate = alphaDecayRate
@@ -58,16 +101,18 @@ class Environment:
         self.movesToGoal = movesToGoal
 
     def setupAgent(self):
+
         numStates = self.getNumStates()
         numActions = self.numActions
         self.agent = Agent(numStates, numActions, self.alpha, self.gamma, self.epsilon)
-        self.agent.qTable = Agent.initialiseQvalues(self.agent, numStates, numActions)
+        self.agent.qTable = initialiseQvalues(numStates, numActions)
 
         if self.debug:
             self.agent.enableDebugging()
 
     def doExperiment(self):
-        self.setupAgent()
+        for a in range(self.numAgents):
+            self.setupAgent()
 
         for e in range(0, self.numEpisodes, 1):
             if self.debug:
@@ -77,9 +122,11 @@ class Environment:
 
     def doEpisode(self):
         stepsTaken = 0
-        self.currentAgentCoords[0] = self.agentStartXY[0]
-        self.currentAgentCoords[1] = self.agentStartXY[1]
-        goalReached = False
+        self.currentAgent1Coords[0] = self.agent1StartXY[0]
+        self.currentAgent1Coords[1] = self.agent1StartXY[1]
+
+        self.currentAgent2Coords[0] = self.agent2StartXY[0]
+        self.currentAgent2Coords[1] = self.agent2StartXY[1]
 
         for t in range(0, self.maxTimesteps, 1):
             if not self.goalReached:
@@ -90,41 +137,60 @@ class Environment:
                 stepsTaken = stepsTaken + 1
             else:
                 break
-        self.decayAlpha()
-        self.decayEpsilon()
-        self.movesToGoal.append(stepsTaken)
+        for a in range(self.numAgents):
+            self.decayAlpha()
+            self.decayEpsilon()
+            self.movesToGoal.append(stepsTaken)
 
     def doTimestep(self):
+        # loop this over each agent
+        for a in range(self.numAgents):
+            if a == 0:
+                currentStateNo = getStateNoFromXY(state=self.currentAgent1Coords,
+                                                  basesForStateNo=[self.xDimension, self.yDimension])
 
-        currentStateNo = Utilities.getStateNoFromXY(self.currentAgentCoords, [self.xDimension, self.yDimension])
+                selectedAction = self.agent.selectAction(currentStateNo)
+                previousAgentCoords = self.currentAgent1Coords
+                currentAgentCoords = self.getNextStateXY(previousAgentCoords, selectedAction)
 
-        selectedAction = self.agent.selectAction(currentStateNo)
-        previousAgentCoords = self.currentAgentCoords
-        currentAgentCoords = self.getNextStateXY(previousAgentCoords, selectedAction)
+                reward = self.calculateReward(previousAgentCoords, selectedAction, currentAgentCoords, a)
 
-        reward = self.calculateReward(previousAgentCoords, selectedAction, currentAgentCoords)
+                nextStateNo = getStateNoFromXY(state=self.currentAgent1Coords,
+                                               basesForStateNo=[self.xDimension, self.yDimension])
+                self.agent.updateQValue(currentStateNo, selectedAction, nextStateNo, reward)
+            if a == 1:
+                currentStateNo = getStateNoFromXY(state=self.currentAgent2Coords,
+                                                  basesForStateNo=[self.xDimension, self.yDimension])
 
-        nextStateNo = Utilities.getStateNoFromXY(self.currentAgentCoords, [self.xDimension, self.yDimension])
-        self.agent.updateQValue(currentStateNo, selectedAction, nextStateNo, reward)
-        if self.debug:
-            print(
-                "Environment: previousState [" + str(previousAgentCoords[0]) + "," + str(previousAgentCoords[1]) + "]; "
-                                                                                                                   "selected "
-                                                                                                                   "move " +
-                self.actionLabels[selectedAction] + "; currentState [" + self.currentAgentCoords[0] + "," +
-                self.currentAgentCoords[1] + "];")
+                selectedAction = self.agent.selectAction(currentStateNo)
+                print(selectedAction)
+                previousAgentCoords = self.currentAgent2Coords
+                print(previousAgentCoords)
+                currentAgentCoords = self.getNextStateXY(previousAgentCoords, selectedAction)
+                print(currentAgentCoords)
+                reward = self.calculateReward(previousAgentCoords, selectedAction, currentAgentCoords, a)
 
-    def calculateReward(self, previousAgentCoords, selectedAction, currentAgentCoords):
+                nextStateNo = getStateNoFromXY(state=self.currentAgent2Coords,
+                                               basesForStateNo=[self.xDimension, self.yDimension])
+                self.agent.updateQValue(currentStateNo, selectedAction, nextStateNo, reward)
 
-        if currentAgentCoords[0] == self.goalLocationXY[0] & currentAgentCoords[1] == self.goalLocationXY[1]:
-            reward = self.goalReward
-            self.goalReached = True
+    def calculateReward(self, previousAgentCoords, selectedAction, currentAgentCoords, agentNum):
+        if agentNum == 0:
+            if currentAgentCoords[0] == self.goal1LocationXY[0] & currentAgentCoords[1] == self.goal1LocationXY[1]:
+                reward = self.goalReward
+                self.goalReached = True
+            else:
+                reward = self.stepPenalty
         else:
-            reward = self.stepPenalty
+            if currentAgentCoords[0] == self.goal2LocationXY[0] & currentAgentCoords[1] == self.goal2LocationXY[1]:
+                reward = self.goalReward
+                self.goalReached = True
+            else:
+                reward = self.stepPenalty
         return reward
 
     def getNextStateXY(self, currentStateXY, action):
-        nextStateXY = (-1, -1)
+        nextStateXY = [-1, -1]
 
         if action == 0:
             if currentStateXY[1] < self.yDimension - 1:
@@ -152,6 +218,11 @@ class Environment:
             else:
                 nextStateXY = [currentStateXY[0], currentStateXY[1]]
 
+        #print("  df "+str(obstacles[currentStateXY[0]][currentStateXY[1]]))
+        if obstacles[currentStateXY[0]][currentStateXY[1]] == 1:
+            print("not allowed")  # don't move agent into new position
+            nextStateXY = [currentStateXY[0], currentStateXY[1]]
+        #print(nextStateXY)
         return nextStateXY
 
     def getNumStates(self):
