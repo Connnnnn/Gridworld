@@ -36,6 +36,8 @@ class Agent:
     def getMaxValuedAction(self, state):
         maxIndex = -1
         maxValue = -sys.float_info.max
+        #print(maxValue)
+
         #print("start")
         for action in range(0, self.numActions):
             #print(str(action)+" = "+str(self.qTable[state][action]))
@@ -49,10 +51,27 @@ class Agent:
 
     def updateQValue(self, previousState, selectedAction, currentState, reward):
 
+        #  PROBLEM - MAX Q IS ALWAYS ZERO
+
+        print("Previous state "+str(previousState))
+        print("selected action "+str(selectedAction))
+        print("Curr state " + str(currentState))
+        print("Reward " + str(reward))
+
         oldQ = self.qTable[previousState][selectedAction]
         maxQ = self.getMaxQValue(currentState)
         newQ = oldQ + self.alpha * (reward + self.gamma * maxQ - oldQ)
+        print(oldQ)
+        print(self.alpha)
+        print(self.gamma)
+        print(maxQ)
+
+
+
+        print(newQ)
+        # print(self.qTable)
         self.qTable[previousState][selectedAction] = newQ
+        #print(self.qTable)
 
     def selectAction(self, state):
         selectedAction = -1
@@ -70,8 +89,8 @@ class Agent:
         else:
             selectedAction = self.getMaxValuedAction(state)
             #print("Max value")
-            if self.debug:
-                print("Agent: selected action " + str(selectedAction) + " greedily")
+            #if self.debug:
+            #print("Agent: selected action " + str(selectedAction) + " greedily")
 
         return selectedAction
 

@@ -146,31 +146,33 @@ class Environment:
         # loop this over each agent
         for a in range(self.numAgents):
             if a == 0:
+                # print(self.currentAgent1Coords)
                 currentStateNo = getStateNoFromXY(state=self.currentAgent1Coords,
                                                   basesForStateNo=[self.xDimension, self.yDimension])
-
+                # print(currentStateNo)
                 selectedAction = self.agent.selectAction(currentStateNo)
                 previousAgentCoords = self.currentAgent1Coords
                 currentAgentCoords = self.getNextStateXY(previousAgentCoords, selectedAction)
-
+                # print(currentAgentCoords)
                 reward = self.calculateReward(previousAgentCoords, selectedAction, currentAgentCoords, a)
 
-                nextStateNo = getStateNoFromXY(state=self.currentAgent1Coords,
+                nextStateNo = getStateNoFromXY(state=currentAgentCoords,
                                                basesForStateNo=[self.xDimension, self.yDimension])
                 self.agent.updateQValue(currentStateNo, selectedAction, nextStateNo, reward)
+
             if a == 1:
                 currentStateNo = getStateNoFromXY(state=self.currentAgent2Coords,
                                                   basesForStateNo=[self.xDimension, self.yDimension])
 
                 selectedAction = self.agent.selectAction(currentStateNo)
-                #print(selectedAction)
+                # print(selectedAction)
                 previousAgentCoords = self.currentAgent2Coords
-                #print(previousAgentCoords)
+                # print(previousAgentCoords)
                 currentAgentCoords = self.getNextStateXY(previousAgentCoords, selectedAction)
-                #print(currentAgentCoords)
+                # print(currentAgentCoords)
                 reward = self.calculateReward(previousAgentCoords, selectedAction, currentAgentCoords, a)
 
-                nextStateNo = getStateNoFromXY(state=self.currentAgent2Coords,
+                nextStateNo = getStateNoFromXY(state=currentAgentCoords,
                                                basesForStateNo=[self.xDimension, self.yDimension])
                 self.agent.updateQValue(currentStateNo, selectedAction, nextStateNo, reward)
 
@@ -195,6 +197,7 @@ class Environment:
         if action == 0:
             if currentStateXY[1] < self.yDimension - 1:
                 nextStateXY = [currentStateXY[0], currentStateXY[1] + 1]
+                # print("here")
 
             else:
                 nextStateXY = [currentStateXY[0], currentStateXY[1]]
@@ -218,11 +221,11 @@ class Environment:
             else:
                 nextStateXY = [currentStateXY[0], currentStateXY[1]]
 
-        #print("  df "+str(obstacles[currentStateXY[0]][currentStateXY[1]]))
+        # print("  df "+str(obstacles[currentStateXY[0]][currentStateXY[1]]))
         if obstacles[currentStateXY[0]][currentStateXY[1]] == 1:
             print("not allowed")  # don't move agent into new position
             nextStateXY = [currentStateXY[0], currentStateXY[1]]
-        #print(nextStateXY)
+        # print(nextStateXY)
         return nextStateXY
 
     def getNumStates(self):
