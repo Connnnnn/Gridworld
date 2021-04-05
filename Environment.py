@@ -20,8 +20,8 @@ class Environment:
             self,
             numActions=4,
             actionLabels=("North", "East", "South", "West"),
-            xDimension=10,
-            yDimension=10,
+            xDimension=5,
+            yDimension=5,
             numEpisodes=1000,
             maxTimesteps=100,
             goalReached=False,
@@ -163,11 +163,11 @@ class Environment:
                                                   basesForStateNo=[self.xDimension, self.yDimension])
 
                 selectedAction = self.agent.selectAction(currentStateNo)
-                print(selectedAction)
+                #print(selectedAction)
                 previousAgentCoords = self.currentAgent2Coords
-                print(previousAgentCoords)
+                #print(previousAgentCoords)
                 currentAgentCoords = self.getNextStateXY(previousAgentCoords, selectedAction)
-                print(currentAgentCoords)
+                #print(currentAgentCoords)
                 reward = self.calculateReward(previousAgentCoords, selectedAction, currentAgentCoords, a)
 
                 nextStateNo = getStateNoFromXY(state=self.currentAgent2Coords,

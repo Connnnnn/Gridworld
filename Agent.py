@@ -36,15 +36,15 @@ class Agent:
     def getMaxValuedAction(self, state):
         maxIndex = -1
         maxValue = -sys.float_info.max
-        print("start")
+        #print("start")
         for action in range(0, self.numActions):
-            print(str(action)+" = "+str(self.qTable[state][action]))
+            #print(str(action)+" = "+str(self.qTable[state][action]))
             if self.qTable[state][action] > maxValue:
-                print(maxValue)
+                #print(maxValue)
                 maxIndex = action
                 maxValue = self.qTable[state][action]
-                print(maxValue)
-        print("end")
+                #print(maxValue)
+        #print("end")
         return maxIndex
 
     def updateQValue(self, previousState, selectedAction, currentState, reward):
@@ -62,14 +62,14 @@ class Agent:
             print("Agent: selecting action, epsilon=" + str(self.epsilon) + ", randomValue=" + str(randomValue))
 
         if randomValue < self.epsilon:
-            print("Random")
+            #print("Random")
             selectedAction = self.selectRandomAction()
         if self.debug:
             print("Agent: selected action " + str(selectedAction) + " at random")
 
         else:
             selectedAction = self.getMaxValuedAction(state)
-            print("Max value")
+            #print("Max value")
             if self.debug:
                 print("Agent: selected action " + str(selectedAction) + " greedily")
 
