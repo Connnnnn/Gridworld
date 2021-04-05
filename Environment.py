@@ -9,11 +9,9 @@ obstacles = [
     [0, 0, 1, 0, 0],
 ]
 
-##Start pos = 4,0 4,4
-
-# 0,2 and 4,2
-
-# obstacles = [[[0], [0], [1], [0], [0]], [[0], [0], [0], [0], [0]], [[0], [0], [0], [0], [0]], [[0], [0], [0], [0], [0]], [[0], [0], [1], [0], [0]]]
+# Start pos = (4,0), (4,4)
+# End pos = (0, 4), (0,0)
+# Obstacles = (0,2), (4,2)
 
 class Environment:
 
@@ -25,7 +23,8 @@ class Environment:
             yDimension=5,
             numEpisodes=1000,
             maxTimesteps=100,
-            goalReached=False,
+            goalReachedA=False,
+            goalReachedB=False,
             goal1LocationXY=None,
             goal2LocationXY=None,
             agent1StartXY=None,
@@ -39,13 +38,13 @@ class Environment:
             previousAgent1Coords=None,
             currentAgent2Coords=None,
             previousAgent2Coords=None,
-            alpha=0.1,
+            alpha=0.3,
             alphaDecays=False,
-            alphaDecayRate=0.9,
-            gamma=1.0,
-            epsilon=0.1,
+            alphaDecayRate=0.5,
+            gamma=0.95,
+            epsilon=0.2,
             epsilonDecays=False,
-            epsilonDecayRate=0.9,
+            epsilonDecayRate=0.5,
             movesToGoal=None
     ):
 
@@ -80,7 +79,8 @@ class Environment:
         self.maxTimesteps = maxTimesteps
         self.debug = debug
         self.numAgents = numAgents
-        self.goalReached = goalReached
+        self.goalReachedA = goalReachedA
+        self.goalReachedB = goalReachedB
         self.goal1LocationXY = goal1LocationXY
         self.agent1StartXY = agent1StartXY
         self.goal2LocationXY = goal2LocationXY
@@ -115,10 +115,7 @@ class Environment:
         for a in range(self.numAgents):
             self.setupAgent()
 
-        for e in range(0, self.numEpisodes, 1):
-            if self.debug:
-                print("\nEnvironment: *************** Episode " + str(e) + " starting ***************")
-
+        for e in range(0, self.numEpisodes):
             self.doEpisode()
 
     def doEpisode(self):
@@ -129,15 +126,16 @@ class Environment:
         self.currentAgent2Coords[0] = self.agent2StartXY[0]
         self.currentAgent2Coords[1] = self.agent2StartXY[1]
 
-        for t in range(0, self.maxTimesteps, 1):
-            if not self.goalReached:
-                if self.debug:
-                    print("\nEnvironment: *************** Timestep " + str(t) + " starting ***************")
+        self.goalReachedA = False
+        self.goalReachedB = False
 
+        for t in range(0, self.maxTimesteps, 1):
+            if not self.goalReachedA and not self.goalReachedB:
                 self.doTimestep()
                 stepsTaken = stepsTaken + 1
             else:
                 break
+
         for a in range(self.numAgents):
             self.decayAlpha()
             self.decayEpsilon()
@@ -147,15 +145,13 @@ class Environment:
         # loop this over each agent
         for a in range(self.numAgents):
             if a == 0:
-                # print(self.currentAgent1Coords)
+
                 currentStateNo = getStateNoFromXY(state=self.currentAgent1Coords,
                                                   basesForStateNo=[self.xDimension, self.yDimension])
-                # print(currentStateNo)
                 selectedAction = self.agent.selectAction(currentStateNo)
                 previousAgentCoords = self.currentAgent1Coords
                 self.currentAgent1Coords = self.getNextStateXY(previousAgentCoords, selectedAction)
-                # print(currentAgentCoords)
-                reward = self.calculateReward(previousAgentCoords, selectedAction, self.currentAgent1Coords, a)
+                reward = self.calculateReward(self.currentAgent1Coords, a)
 
                 nextStateNo = getStateNoFromXY(state=self.currentAgent1Coords,
                                                basesForStateNo=[self.xDimension, self.yDimension])
@@ -166,28 +162,25 @@ class Environment:
                                                   basesForStateNo=[self.xDimension, self.yDimension])
 
                 selectedAction = self.agent.selectAction(currentStateNo)
-                # print(selectedAction)
                 previousAgentCoords = self.currentAgent2Coords
-                # print(previousAgentCoords)
-                currentAgentCoords = self.getNextStateXY(previousAgentCoords, selectedAction)
-                # print(currentAgentCoords)
-                reward = self.calculateReward(previousAgentCoords, selectedAction, currentAgentCoords, a)
+                self.currentAgent2Coords = self.getNextStateXY(previousAgentCoords, selectedAction)
+                reward = self.calculateReward(self.currentAgent2Coords, a)
 
-                nextStateNo = getStateNoFromXY(state=currentAgentCoords,
+                nextStateNo = getStateNoFromXY(state=self.currentAgent2Coords,
                                                basesForStateNo=[self.xDimension, self.yDimension])
                 self.agent.updateQValue(currentStateNo, selectedAction, nextStateNo, reward)
 
-    def calculateReward(self, previousAgentCoords, selectedAction, currentAgentCoords, agentNum):
+    def calculateReward(self, currentAgentCoords, agentNum):
         if agentNum == 0:
             if currentAgentCoords[0] == self.goal1LocationXY[0] & currentAgentCoords[1] == self.goal1LocationXY[1]:
                 reward = self.goalReward
-                self.goalReached = True
+                self.goalReachedA = True
             else:
                 reward = self.stepPenalty
         else:
             if currentAgentCoords[0] == self.goal2LocationXY[0] & currentAgentCoords[1] == self.goal2LocationXY[1]:
                 reward = self.goalReward
-                self.goalReached = True
+                self.goalReachedB = True
             else:
                 reward = self.stepPenalty
 
@@ -199,7 +192,6 @@ class Environment:
         if action == 0:
             if currentStateXY[1] < self.yDimension - 1:
                 nextStateXY = [currentStateXY[0], currentStateXY[1] + 1]
-                # print("here")
 
             else:
                 nextStateXY = [currentStateXY[0], currentStateXY[1]]
@@ -223,9 +215,7 @@ class Environment:
             else:
                 nextStateXY = [currentStateXY[0], currentStateXY[1]]
 
-        # print("  df "+str(obstacles[currentStateXY[0]][currentStateXY[1]]))
         if obstacles[currentStateXY[0]][currentStateXY[1]] == 1:
-
             nextStateXY = [currentStateXY[0], currentStateXY[1]]
 
         return nextStateXY
