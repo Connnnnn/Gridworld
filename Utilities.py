@@ -63,9 +63,7 @@ def resultsToCSVFile(results, experimentName):
 
     with open("out/" + experimentName + "/" + experimentName + "_stepsToGoal.csv", mode='w') as out:
         writer = csv.writer(out, delimiter="\n")
-        for line in resultsTable:
-            print(line)
-            writer.writerow(line)
+        writer.writerows(resultsTable)
 
 
 def QTablesToFile(QTables, basesForStateNo, experimentName):
