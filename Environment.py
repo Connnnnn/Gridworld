@@ -9,6 +9,7 @@ obstacles = [
     [0, 0, 1, 0, 0],
 ]
 
+
 # Start pos = (4,0), (4,4)
 # End pos = (0, 4), (0,0)
 # Obstacles = (0,2), (4,2)
@@ -145,7 +146,6 @@ class Environment:
         # loop this over each agent
         for a in range(self.numAgents):
             if a == 0:
-
                 currentStateNo = getStateNoFromXY(state=self.currentAgent1Coords,
                                                   basesForStateNo=[self.xDimension, self.yDimension])
                 selectedAction = self.agent.selectAction(currentStateNo)

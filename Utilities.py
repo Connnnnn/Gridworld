@@ -59,16 +59,19 @@ def resultsToCSVStr(results):
 
 def resultsToCSVFile(results, experimentName):
     resultsTable = resultsToCSVStr(results)
+    #print(resultsTable)
+
     with open("out/" + experimentName + "/" + experimentName + "_stepsToGoal.csv", mode='w') as out:
-        writer = csv.writer(out)
-        writer.writerows(resultsTable)
+        writer = csv.writer(out, delimiter="\n")
+        for line in resultsTable:
+            print(line)
+            writer.writerow(line)
 
 
 def QTablesToFile(QTables, basesForStateNo, experimentName):
     output = ""
 
     for run in range(len(QTables)):
-        #print(QTables[run])
         output += "*************** Q table for run " + str(run) + " ***************\n"
         output += qTableAsString(QTables[run], basesForStateNo) + "\n\n"
 
