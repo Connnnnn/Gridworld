@@ -58,13 +58,13 @@ def resultsToCSVStr(results):
 
 
 def resultsToCSVFile(results, experimentName):
-    #print(results)
+    # print(results)
     output = "Episode No.,"
     for run in results:
         output += "Run" + str(run) + "Steps,"
 
     resultsTable = resultsToCSVStr(results)
-    #print(resultsTable)
+    # print(resultsTable)
 
     with open("out/" + experimentName + "/" + experimentName + "_stepsToGoal.csv", mode='w') as out:
         writer = csv.writer(out, delimiter="\n")

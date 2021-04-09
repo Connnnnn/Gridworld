@@ -7,11 +7,16 @@ from Environment import Environment
 class Grid:
     def __init__(
             self,
-            results=[],
-            QTables=[],
+            results=None,
+            QTables=None,
             numRuns=10,
             experimentName="Gridworld_" + str(round(time.time() * 1000))
     ):
+        if QTables is None:
+            QTables = []
+        if results is None:
+            results = []
+
         self.numRuns = numRuns
         self.results = results
         self.QTables = QTables

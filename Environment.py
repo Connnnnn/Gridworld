@@ -13,7 +13,6 @@ from Utilities import *
 # ]
 
 
-
 # Start pos = (4,0), (4,4)
 # End pos = (0, 4), (0,0)
 # Obstacles = (0,2), (4,2)
@@ -161,11 +160,11 @@ class Environment:
                                                   basesForStateNo=[self.xDimension, self.yDimension])
                 selectedAction = self.agent.selectAction(currentStateNo)
                 previousAgentCoords = self.currentAgent1Coords
-                self.currentAgent1Coords = self.getNextStateXY(previousAgentCoords, selectedAction)
+                self.currentAgent1Coords = self.getNextStateXY(previousAgentCoords, selectedAction,agentNum = a,)
                 reward = self.calculateReward(self.currentAgent1Coords, a)
 
-                #print(self.currentAgent1Coords)
-                #print(reward)
+                # print(self.currentAgent1Coords)
+                # print(reward)
 
                 nextStateNo = getStateNoFromXY(state=self.currentAgent1Coords,
                                                basesForStateNo=[self.xDimension, self.yDimension])
@@ -177,7 +176,7 @@ class Environment:
 
                 selectedAction = self.agent.selectAction(currentStateNo)
                 previousAgentCoords = self.currentAgent2Coords
-                self.currentAgent2Coords = self.getNextStateXY(previousAgentCoords, selectedAction)
+                self.currentAgent2Coords = self.getNextStateXY(previousAgentCoords, selectedAction, a)
                 reward = self.calculateReward(self.currentAgent2Coords, a)
 
                 nextStateNo = getStateNoFromXY(state=self.currentAgent2Coords,
@@ -186,8 +185,6 @@ class Environment:
 
     def calculateReward(self, currentAgentCoords, agentNum):
         if agentNum == 0:
-            #print(currentAgentCoords[0])
-            #print(self.goal1LocationXY[0])
             if currentAgentCoords[0] == self.goal1LocationXY[0] & currentAgentCoords[1] == self.goal1LocationXY[1]:
                 reward = self.goalReward
                 self.goalReachedA = True
@@ -202,7 +199,7 @@ class Environment:
 
         return reward
 
-    def getNextStateXY(self, currentStateXY, action):
+    def getNextStateXY(self, currentStateXY,action, agentNum):
         nextStateXY = [-1, -1]
 
         if action == 0:
@@ -231,9 +228,15 @@ class Environment:
             else:
                 nextStateXY = [currentStateXY[0], currentStateXY[1]]
 
-
-        if obstacles[currentStateXY[0]][currentStateXY[1]] == 1:
+        if obstacles[nextStateXY[0]][nextStateXY[1]] == 1:
             nextStateXY = [currentStateXY[0], currentStateXY[1]]
+
+        if agentNum == 0:
+            if nextStateXY == self.currentAgent2Coords:
+                nextStateXY = [currentStateXY[0], currentStateXY[1]]
+        elif agentNum == 1:
+            if nextStateXY == self.currentAgent1Coords:
+                nextStateXY = [currentStateXY[0], currentStateXY[1]]
 
         return nextStateXY
 
@@ -251,7 +254,7 @@ class Environment:
             self.agent.setEpsilon(self.agent, self.epsilon)
 
     def getQTable(self):
-        return self.agent.copyQTable(self.agent)
+        return self.agent.copyQTable()
 
     def getXDimension(self):
         return self.xDimension
