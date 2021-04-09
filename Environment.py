@@ -1,18 +1,29 @@
+import ast
+import configparser
+
 from Agent import *
 from Utilities import *
 
-obstacles = [
-    [0, 0, 1, 0, 0],
-    [0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0],
-    [0, 0, 1, 0, 0],
-]
+# obstacles = [
+#     [0, 0, 1, 0, 0],
+#     [0, 0, 0, 0, 0],
+#     [0, 0, 0, 0, 0],
+#     [0, 0, 0, 0, 0],
+#     [0, 0, 1, 0, 0],
+# ]
+
 
 
 # Start pos = (4,0), (4,4)
 # End pos = (0, 4), (0,0)
 # Obstacles = (0,2), (4,2)
+
+env = "MA2-SD.txt"
+parser = configparser.ConfigParser()
+parser.read(env)
+
+obstacles = ast.literal_eval(parser.get("config", "obstacles"))
+
 
 class Environment:
 
@@ -20,10 +31,10 @@ class Environment:
             self,
             numActions=4,
             actionLabels=("North", "East", "South", "West"),
-            xDimension=5,
-            yDimension=5,
-            numEpisodes=1000,
-            maxTimesteps=100,
+            xDimension=int(parser.get("config", "xDimensions")),
+            yDimension=int(parser.get("config", "yDimensions")),
+            numEpisodes=int(parser.get("config", "numEpisodes")),
+            maxTimesteps=int(parser.get("config", "maxTimesteps")),
             goalReachedA=False,
             goalReachedB=False,
             goal1LocationXY=None,
@@ -32,32 +43,32 @@ class Environment:
             agent2StartXY=None,
             goalReward=10.0,
             stepPenalty=-1.0,
-            numAgents=2,
+            numAgents=int(parser.get("config", "numAgents")),
             debug=False,
 
             currentAgent1Coords=None,
             previousAgent1Coords=None,
             currentAgent2Coords=None,
             previousAgent2Coords=None,
-            alpha=0.3,
+            alpha=float(parser.get("config", "alpha")),
             alphaDecays=False,
-            alphaDecayRate=0.5,
-            gamma=0.95,
-            epsilon=0.2,
+            alphaDecayRate=float(parser.get("config", "alphaDecayRate")),
+            gamma=float(parser.get("config", "gamma")),
+            epsilon=float(parser.get("config", "epsilon")),
             epsilonDecays=False,
-            epsilonDecayRate=0.5,
+            epsilonDecayRate=float(parser.get("config", "epsilonDecayRate")),
             movesToGoal=None
     ):
 
         if agent1StartXY is None:
-            agent1StartXY = [4, 0]
+            agent1StartXY = ast.literal_eval(parser.get("config", "agent1StartXY"))
         if agent2StartXY is None:
-            agent2StartXY = [4, 4]
+            agent2StartXY = ast.literal_eval(parser.get("config", "agent2StartXY"))
 
         if goal1LocationXY is None:
-            goal1LocationXY = [0, 4]
+            goal1LocationXY = ast.literal_eval(parser.get("config", "goal1LocationXY"))
         if goal2LocationXY is None:
-            goal2LocationXY = [0, 0]
+            goal2LocationXY = ast.literal_eval(parser.get("config", "goal2LocationXY"))
 
         if currentAgent1Coords is None:
             currentAgent1Coords = [-1, -1]
@@ -153,6 +164,9 @@ class Environment:
                 self.currentAgent1Coords = self.getNextStateXY(previousAgentCoords, selectedAction)
                 reward = self.calculateReward(self.currentAgent1Coords, a)
 
+                #print(self.currentAgent1Coords)
+                #print(reward)
+
                 nextStateNo = getStateNoFromXY(state=self.currentAgent1Coords,
                                                basesForStateNo=[self.xDimension, self.yDimension])
                 self.agent.updateQValue(currentStateNo, selectedAction, nextStateNo, reward)
@@ -172,6 +186,8 @@ class Environment:
 
     def calculateReward(self, currentAgentCoords, agentNum):
         if agentNum == 0:
+            #print(currentAgentCoords[0])
+            #print(self.goal1LocationXY[0])
             if currentAgentCoords[0] == self.goal1LocationXY[0] & currentAgentCoords[1] == self.goal1LocationXY[1]:
                 reward = self.goalReward
                 self.goalReachedA = True
@@ -214,6 +230,7 @@ class Environment:
 
             else:
                 nextStateXY = [currentStateXY[0], currentStateXY[1]]
+
 
         if obstacles[currentStateXY[0]][currentStateXY[1]] == 1:
             nextStateXY = [currentStateXY[0], currentStateXY[1]]

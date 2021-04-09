@@ -51,10 +51,10 @@ class Agent:
         # All q values are initialised at zero and never have the chance to go higher
         # PROBLEM - MAX Q IS ALWAYS ZERO
 
-        # print("Previous state "+str(previousState))
-        # print("selected action "+str(selectedAction))
-        # print("Curr state " + str(currentState))
-        # print("Reward " + str(reward))
+        #print("Previous state "+str(previousState))
+        #print("selected action "+str(selectedAction))
+        #print("Curr state " + str(currentState))
+        #print("Reward " + str(reward))
 
         oldQ = self.qTable[previousState][selectedAction]
         maxQ = self.getMaxQValue(currentState)
@@ -63,7 +63,7 @@ class Agent:
         # print(oldQ)
         # print(self.alpha)
         # print(self.gamma)
-        # print(str(maxQ))
+        #print(str(maxQ))
 
         # print(newQ)
         # print(self.qTable)
