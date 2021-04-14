@@ -13,4 +13,8 @@ agent1StartXY = [4, 0]
 agent2StartXY = [4, 4]
 goal1LocationXY = [0, 4]
 goal2LocationXY = [0, 0]
-obstacles = [[0, 0, 1, 0, 0],[0, 0, 0, 0, 0],[0, 0, 0, 0, 0],[0, 0, 0, 0, 0],[0, 0, 1, 0, 0]]
+obstacles = [[0, 0, 1, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 1, 0, 0]]
+
+# Start pos = (4,0), (4,4)
+# End pos = (0, 4), (0,0)
+# Obstacles = (0,2), (4,2)

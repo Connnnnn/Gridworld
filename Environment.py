@@ -4,19 +4,6 @@ import configparser
 from Agent import *
 from Utilities import *
 
-# obstacles = [
-#     [0, 0, 1, 0, 0],
-#     [0, 0, 0, 0, 0],
-#     [0, 0, 0, 0, 0],
-#     [0, 0, 0, 0, 0],
-#     [0, 0, 1, 0, 0],
-# ]
-
-
-# Start pos = (4,0), (4,4)
-# End pos = (0, 4), (0,0)
-# Obstacles = (0,2), (4,2)
-
 env = "MA2-SD.txt"
 parser = configparser.ConfigParser()
 parser.read(env)
@@ -128,6 +115,10 @@ class Environment:
 
         for e in range(0, self.numEpisodes):
             self.doEpisode()
+            output = ""
+            output += f"--------------Episode {e} ------------------------ \n"
+            file = open("out/Test.txt", "a")
+            file.write(output)
 
     def doEpisode(self):
         stepsTaken = 0
@@ -154,21 +145,25 @@ class Environment:
 
     def doTimestep(self):
         # loop this over each agent
+        output = ""
         for a in range(self.numAgents):
             if a == 0:
                 currentStateNo = getStateNoFromXY(state=self.currentAgent1Coords,
                                                   basesForStateNo=[self.xDimension, self.yDimension])
                 selectedAction = self.agent.selectAction(currentStateNo)
                 previousAgentCoords = self.currentAgent1Coords
-                self.currentAgent1Coords = self.getNextStateXY(previousAgentCoords, selectedAction,agentNum = a,)
-                reward = self.calculateReward(self.currentAgent1Coords, a)
+                self.currentAgent1Coords = self.getNextStateXY(previousAgentCoords, selectedAction, agentNum=a, )
 
-                # print(self.currentAgent1Coords)
-                # print(reward)
+                reward = self.calculateReward(self.currentAgent1Coords, a)
 
                 nextStateNo = getStateNoFromXY(state=self.currentAgent1Coords,
                                                basesForStateNo=[self.xDimension, self.yDimension])
                 self.agent.updateQValue(currentStateNo, selectedAction, nextStateNo, reward)
+
+                output += "---------------------------------------- \n"
+                output += "Previous Agent 1 Coords = " + str(previousAgentCoords) + "\n"
+                output += "Current Agent 1 Coords = " + str(self.currentAgent1Coords) + "\n"
+                output += "Agent 1 Reward = " + str(reward) + "\n"
 
             if a == 1:
                 currentStateNo = getStateNoFromXY(state=self.currentAgent2Coords,
@@ -177,29 +172,42 @@ class Environment:
                 selectedAction = self.agent.selectAction(currentStateNo)
                 previousAgentCoords = self.currentAgent2Coords
                 self.currentAgent2Coords = self.getNextStateXY(previousAgentCoords, selectedAction, a)
+
                 reward = self.calculateReward(self.currentAgent2Coords, a)
 
                 nextStateNo = getStateNoFromXY(state=self.currentAgent2Coords,
                                                basesForStateNo=[self.xDimension, self.yDimension])
                 self.agent.updateQValue(currentStateNo, selectedAction, nextStateNo, reward)
 
+                output += "-----\n"
+                output += "Previous Agent 2 Coords = " + str(previousAgentCoords) + "\n"
+                output += "Current Agent 2 Coords = " + str(self.currentAgent2Coords) + "\n"
+                output += "Agent 2 Reward = " + str(reward) + "\n"
+        file = open("out/Test.txt", "a")
+        file.write(output)
+
     def calculateReward(self, currentAgentCoords, agentNum):
+
         if agentNum == 0:
             if currentAgentCoords[0] == self.goal1LocationXY[0] & currentAgentCoords[1] == self.goal1LocationXY[1]:
                 reward = self.goalReward
                 self.goalReachedA = True
+            elif currentAgentCoords[0] == self.goal2LocationXY[0] & currentAgentCoords[1] == self.goal2LocationXY[1]:
+                reward = self.stepPenalty
             else:
                 reward = self.stepPenalty
         else:
             if currentAgentCoords[0] == self.goal2LocationXY[0] & currentAgentCoords[1] == self.goal2LocationXY[1]:
                 reward = self.goalReward
                 self.goalReachedB = True
+            elif currentAgentCoords[0] == self.goal1LocationXY[0] & currentAgentCoords[1] == self.goal1LocationXY[1]:
+                reward = self.stepPenalty
             else:
                 reward = self.stepPenalty
 
         return reward
 
-    def getNextStateXY(self, currentStateXY,action, agentNum):
+    def getNextStateXY(self, currentStateXY, action, agentNum):
         nextStateXY = [-1, -1]
 
         if action == 0:

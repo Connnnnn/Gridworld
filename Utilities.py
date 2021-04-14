@@ -7,10 +7,7 @@ def getXYfromStateNo(stateNo, basesForStateNo):
     inputstateNo = stateNo
 
     for i in range(len(state) - 1, -1, -1):
-        # print("Input state no = " + str(inputstateNo))
-        # print("Bases state no = " + str(basesForStateNo[i]))
         state[i] = (inputstateNo % basesForStateNo[i])
-        # print("X Y = " + str(state[i]))
         inputstateNo = inputstateNo // basesForStateNo[i]
 
     return state
