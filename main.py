@@ -7,18 +7,22 @@ from Environment import Environment
 class Grid:
     def __init__(
             self,
-            results=None,
+            results1=None,
+            results2=None,
             QTables=None,
             numRuns=10,
             experimentName="Gridworld_" + str(round(time.time() * 1000))
     ):
         if QTables is None:
             QTables = []
-        if results is None:
-            results = []
+        if results1 is None:
+            results1 = []
+        if results2 is None:
+            results2 = []
 
         self.numRuns = numRuns
-        self.results = results
+        self.results1 = results1
+        self.results2 = results2
         self.QTables = QTables
         self.experimentName = experimentName
 
@@ -36,10 +40,11 @@ class Grid:
 
             env.doExperiment()
 
-            self.results.append(env.getMovesToGoal())
+            self.results1.append(env.getMovesToGoal1())
+            self.results2.append(env.getMovesToGoal2())
             self.QTables.append(env.getQTable())
 
-        resultsToCSVFile(results=self.results, experimentName=self.experimentName)
+        resultsToCSVFile(results1=self.results1, results2=self.results2, experimentName=self.experimentName)
         QTablesToFile(QTables=self.QTables,
                       basesForStateNo=[Environment.getXDimension(env), Environment.getYDimension(env)],
                       experimentName=self.experimentName)

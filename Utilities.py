@@ -39,33 +39,42 @@ def getStateNoFromXY(state, basesForStateNo):
     return stateNo
 
 
-def resultsToCSVStr(results):
-    output = "Episode No.,"
+# def resultsToCSVStr(results):
+#     output = "Episode No.,"
+#
+#     for run in results:
+#         output += "Run" + str(run) + "Steps,"
+#
+#     for time in range(len(results[0])):
+#
+#         output += "\n" + str(time) + ","
+#         for run in range(len(results)):
+#             output += "" + str(results[run][time]) + ","
+#
+#     return output
 
-    for run in results:
-        output += "Run" + str(run) + "Steps,"
 
-    for time in range(len(results[0])):
+def resultsToCSVFile(results1, results2, experimentName):
+    output = ["Episode No. "]
 
-        output += "\n" + str(time) + ","
-        for run in range(len(results)):
-            output += "" + str(results[run][time]) + ","
+    # Include the Second results
+    # And get the output correctly moving into their cells
+    for run in results1:
 
-    return output
+        output[0] += f'Run{run} '
 
+    for time in range(len(results1[0])):
 
-def resultsToCSVFile(results, experimentName):
-    # print(results)
-    output = "Episode No.,"
-    for run in results:
-        output += "Run" + str(run) + "Steps,"
+        output.append(str(time) + str(" "))
 
-    resultsTable = resultsToCSVStr(results)
-    # print(resultsTable)
+        for run in range(1,len(results1)):
+            output.append(str(results1[run][time]) + str(' '))
+
+    # resultsTable = resultsToCSVStr(results1)
 
     with open("out/" + experimentName + "/" + experimentName + "_stepsToGoal.csv", mode='w') as out:
-        writer = csv.writer(out, delimiter="\n")
-        writer.writerow(resultsTable)
+        writer = csv.writer(out, delimiter=" ")
+        writer.writerow(output)
 
 
 def QTablesToFile(QTables, basesForStateNo, experimentName):

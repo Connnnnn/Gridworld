@@ -43,7 +43,8 @@ class Environment:
             epsilon=float(parser.get("config", "epsilon")),
             epsilonDecays=False,
             epsilonDecayRate=float(parser.get("config", "epsilonDecayRate")),
-            movesToGoal=None
+            movesToGoal1=None,
+            movesToGoal2=None
     ):
 
         if agent1StartXY is None:
@@ -65,8 +66,10 @@ class Environment:
         if previousAgent2Coords is None:
             previousAgent2Coords = [-1 - 1]
 
-        if movesToGoal is None:
-            movesToGoal = []
+        if movesToGoal1 is None:
+            movesToGoal1 = []
+        if movesToGoal2 is None:
+            movesToGoal2 = []
 
         self.agent = None
         self.numActions = numActions
@@ -97,7 +100,8 @@ class Environment:
         self.epsilon = epsilon
         self.epsilonDecays = epsilonDecays
         self.epsilonDecayRate = epsilonDecayRate
-        self.movesToGoal = movesToGoal
+        self.movesToGoal1 = movesToGoal1
+        self.movesToGoal2 = movesToGoal2
 
     def setupAgent(self):
 
@@ -138,10 +142,13 @@ class Environment:
             else:
                 break
 
+        self.decayAlpha()
+        self.decayEpsilon()
         for a in range(self.numAgents):
-            self.decayAlpha()
-            self.decayEpsilon()
-            self.movesToGoal.append(stepsTaken)
+            if a == 0:
+                self.movesToGoal1.append(stepsTaken)
+            elif a == 1:
+                self.movesToGoal2.append(stepsTaken)
 
     def doTimestep(self):
         # loop this over each agent
@@ -270,5 +277,8 @@ class Environment:
     def getYDimension(self):
         return self.yDimension
 
-    def getMovesToGoal(self):
-        return self.movesToGoal
+    def getMovesToGoal1(self):
+        return self.movesToGoal1
+
+    def getMovesToGoal2(self):
+        return self.movesToGoal2
