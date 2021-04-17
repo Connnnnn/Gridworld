@@ -4,7 +4,7 @@ import configparser
 from Agent import *
 from Utilities import *
 
-env = "MA2-SD.txt"
+env = "MA-CL-0"
 parser = configparser.ConfigParser()
 parser.read(env)
 

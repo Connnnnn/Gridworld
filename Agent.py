@@ -64,9 +64,9 @@ class Agent:
         # print(str(maxQ))
 
         # print(newQ)
-        #print("Old QTable -  " + str(self.qTable))
+        # print("Old QTable -  " + str(self.qTable))
         self.qTable[previousState][selectedAction] = newQ
-        #print("New QTable -  " + str(self.qTable))
+        # print("New QTable -  " + str(self.qTable))
 
     def selectAction(self, state):
         selectedAction = -1

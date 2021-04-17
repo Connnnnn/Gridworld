@@ -60,21 +60,20 @@ def resultsToCSVFile(results1, results2, experimentName):
     # Include the Second results
     # And get the output correctly moving into their cells
     for run in results1:
-
         output[0] += f'Run{run} '
 
     for time in range(len(results1[0])):
 
-        output.append(str(time) + str(" "))
+        output.append(str(time) + str(","))
 
-        for run in range(1,len(results1)):
-            output.append(str(results1[run][time]) + str(' '))
+        for run in range(0, len(results1)):
+            output.append(str(results1[run][time]) + str(','))
 
     # resultsTable = resultsToCSVStr(results1)
 
     with open("out/" + experimentName + "/" + experimentName + "_stepsToGoal.csv", mode='w') as out:
-        writer = csv.writer(out, delimiter=" ")
-        writer.writerow(output)
+        writer = csv.writer(out, delimiter=",")
+        writer.writerows(output)
 
 
 def QTablesToFile(QTables, basesForStateNo, experimentName):
