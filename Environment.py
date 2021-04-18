@@ -4,11 +4,12 @@ import configparser
 from Agent import *
 from Utilities import *
 
-env = "MA2-SD.txt"
+env0 = ["MA2-SD.txt"]
+env1 = ["MA-CL-0"]
+env2 = ["MA-CL-0", "MA-CL-1", "MA-CL-2", "MA-CL-3"]
 parser = configparser.ConfigParser()
-parser.read(env)
-
-obstacles = ast.literal_eval(parser.get("config", "obstacles"))
+env = env0
+parser.read(str(env[0]))
 
 
 class Environment:
@@ -46,7 +47,8 @@ class Environment:
             movesToGoal1=None,
             movesToGoal2=None,
             qTable1=None,
-            qTable2=None
+            qTable2=None,
+            obstacles=ast.literal_eval(parser.get("config", "obstacles"))
     ):
 
         if agent1StartXY is None:
@@ -106,6 +108,7 @@ class Environment:
         self.movesToGoal2 = movesToGoal2
         self.qTable1 = qTable1
         self.qTable2 = qTable2
+        self.obstacles = obstacles
 
     def setupAgent(self):
 
@@ -122,14 +125,42 @@ class Environment:
     def doExperiment(self):
         for a in range(self.numAgents):
             self.setupAgent()
+        # Do loop of number of experiments
+        for e in range(0, len(env)):
 
-        for e in range(0, self.numEpisodes):
-            self.doEpisode()
             output = ""
-            output += f"--------------Episode {e} ------------------------ \n"
+            output += f"--------------Experiment {e + 1} ------------------------ \n"
             file = open("out/Test.txt", "a")
-
             file.write(output)
+
+            if len(env) > 1:
+                self.configChange(e)
+            # Make method to change variables based on the file, have an array of environments file names, cycle through
+            for f in range(0, self.numEpisodes):
+                self.doEpisode()
+                output = ""
+                output += f"--------------Episode {f} ------------------------ \n"
+                file = open("out/Test.txt", "a")
+
+                file.write(output)
+
+    def configChange(self, e):
+
+        parse = configparser.ConfigParser()
+        parse.read(str(env[e]))
+
+        self.xDimension = int(parser.get("config", "xDimensions"))
+        self.yDimension = int(parser.get("config", "yDimensions"))
+        self.numEpisodes = int(parser.get("config", "numEpisodes"))
+        self.maxTimesteps = int(parser.get("config", "maxTimesteps"))
+        self.numAgents = int(parser.get("config", "numAgents"))
+        self.alphaDecayRate = float(parser.get("config", "alphaDecayRate"))
+        self.epsilonDecayRate = float(parser.get("config", "epsilonDecayRate"))
+        self.agent1StartXY = ast.literal_eval(parser.get("config", "agent1StartXY"))
+        self.agent2StartXY = ast.literal_eval(parser.get("config", "agent2StartXY"))
+        self.goal1LocationXY = ast.literal_eval(parser.get("config", "goal1LocationXY"))
+        self.goal2LocationXY = ast.literal_eval(parser.get("config", "goal2LocationXY"))
+        self.obstacles = ast.literal_eval(parser.get("config", "obstacles"))
 
     def doEpisode(self):
         stepsTaken = 0
@@ -169,7 +200,7 @@ class Environment:
                 self.currentAgent1Coords = self.getNextStateXY(previousAgentCoords, selectedAction, agentNum=a)
 
                 reward = self.calculateReward(self.currentAgent1Coords, a)
-                # print(self.currentAgent1Coords)
+
                 nextStateNo = getStateNoFromXY(state=self.currentAgent1Coords,
                                                basesForStateNo=[self.xDimension, self.yDimension])
                 self.agent.updateQValue(currentStateNo, selectedAction, nextStateNo, reward, a)
@@ -204,34 +235,27 @@ class Environment:
         output = ""
         reward = 0
         if agentNum == 0:
-            output += "Coords = " + str(currentAgentCoords) + "\n"
-            output += "Goal X = " + str(self.goal1LocationXY[0]) + "\n"
-            output += "Goal Y = " + str(self.goal1LocationXY[1]) + "\n"
 
-            if currentAgentCoords[0] == 0 and currentAgentCoords[1] == 4:
-                print("Valhalla")
-            if currentAgentCoords[0] == self.goal1LocationXY[0] & currentAgentCoords[1] == self.goal1LocationXY[1]:
+            if currentAgentCoords[0] == self.goal1LocationXY[0] and currentAgentCoords[1] == self.goal1LocationXY[1]:
                 reward = self.goalReward
-                print("apples")
                 output += "Reward = " + str(reward) + "\n"
                 self.goalReachedA = True
-            elif currentAgentCoords[0] == self.goal2LocationXY[0] & currentAgentCoords[1] == self.goal2LocationXY[1]:
+            elif currentAgentCoords[0] == self.goal2LocationXY[0] and currentAgentCoords[1] == self.goal2LocationXY[1]:
                 reward = self.stepPenalty
             else:
                 reward = self.stepPenalty
+
         elif agentNum == 1:
-            print(self.goal2LocationXY)
-            if currentAgentCoords[0] == self.goal2LocationXY[0] & currentAgentCoords[1] == self.goal2LocationXY[1]:
-                print(currentAgentCoords[0])
-                print(currentAgentCoords[1])
+
+            if currentAgentCoords[0] == self.goal2LocationXY[0] and currentAgentCoords[1] == self.goal2LocationXY[1]:
+
                 reward = self.goalReward
                 self.goalReachedB = True
-            elif currentAgentCoords[0] == self.goal1LocationXY[0] & currentAgentCoords[1] == self.goal1LocationXY[1]:
+            elif currentAgentCoords[0] == self.goal1LocationXY[0] and currentAgentCoords[1] == self.goal1LocationXY[1]:
                 reward = self.stepPenalty
             else:
                 reward = self.stepPenalty
-        file = open("out/Test2.txt", "a")
-        file.write(output)
+
         return reward
 
     def getNextStateXY(self, currentStateXY, action, agentNum):
@@ -263,7 +287,7 @@ class Environment:
             else:
                 nextStateXY = [currentStateXY[0], currentStateXY[1]]
 
-        if obstacles[nextStateXY[0]][nextStateXY[1]] == 1:
+        if self.obstacles[nextStateXY[0]][nextStateXY[1]] == 1:
             nextStateXY = [currentStateXY[0], currentStateXY[1]]
 
         if agentNum == 0:

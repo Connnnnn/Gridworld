@@ -67,10 +67,10 @@ class Agent:
             # print("Curr state " + str(currentState))
             # print("Reward " + str(reward))
 
-            # print(oldQ)
-            # print(self.alpha)
-            # print(self.gamma)
-            # print(str(maxQ))
+            #print("Old Q = "+str(oldQ))
+            #print("Alpha = "+str(self.alpha))
+            #print("Gamma = "+str(self.gamma))
+            #print("Max Q ="+str(str(maxQ)))
 
             # print(newQ)
             # print("Old QTable -  " + str(self.qTable))
