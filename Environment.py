@@ -4,7 +4,7 @@ import configparser
 from Agent import *
 from Utilities import *
 
-env = "MA-CL-0"
+env = "MA2-SD.txt"
 parser = configparser.ConfigParser()
 parser.read(env)
 
@@ -44,7 +44,9 @@ class Environment:
             epsilonDecays=False,
             epsilonDecayRate=float(parser.get("config", "epsilonDecayRate")),
             movesToGoal1=None,
-            movesToGoal2=None
+            movesToGoal2=None,
+            qTable1=None,
+            qTable2=None
     ):
 
         if agent1StartXY is None:
@@ -102,13 +104,17 @@ class Environment:
         self.epsilonDecayRate = epsilonDecayRate
         self.movesToGoal1 = movesToGoal1
         self.movesToGoal2 = movesToGoal2
+        self.qTable1 = qTable1
+        self.qTable2 = qTable2
 
     def setupAgent(self):
 
         numStates = self.getNumStates()
         numActions = self.numActions
         self.agent = Agent(numStates, numActions, self.alpha, self.gamma, self.epsilon)
-        self.agent.qTable = initialiseQvalues(numStates, numActions)
+
+        self.agent.qTable1 = initialiseQvalues(numStates, numActions)
+        self.agent.qTable2 = initialiseQvalues(numStates, numActions)
 
         if self.debug:
             self.agent.enableDebugging()
@@ -122,6 +128,7 @@ class Environment:
             output = ""
             output += f"--------------Episode {e} ------------------------ \n"
             file = open("out/Test.txt", "a")
+
             file.write(output)
 
     def doEpisode(self):
@@ -157,15 +164,15 @@ class Environment:
             if a == 0:
                 currentStateNo = getStateNoFromXY(state=self.currentAgent1Coords,
                                                   basesForStateNo=[self.xDimension, self.yDimension])
-                selectedAction = self.agent.selectAction(currentStateNo)
+                selectedAction = self.agent.selectAction(currentStateNo, a)
                 previousAgentCoords = self.currentAgent1Coords
-                self.currentAgent1Coords = self.getNextStateXY(previousAgentCoords, selectedAction, agentNum=a, )
+                self.currentAgent1Coords = self.getNextStateXY(previousAgentCoords, selectedAction, agentNum=a)
 
                 reward = self.calculateReward(self.currentAgent1Coords, a)
-
+                # print(self.currentAgent1Coords)
                 nextStateNo = getStateNoFromXY(state=self.currentAgent1Coords,
                                                basesForStateNo=[self.xDimension, self.yDimension])
-                self.agent.updateQValue(currentStateNo, selectedAction, nextStateNo, reward)
+                self.agent.updateQValue(currentStateNo, selectedAction, nextStateNo, reward, a)
 
                 output += "---------------------------------------- \n"
                 output += "Previous Agent 1 Coords = " + str(previousAgentCoords) + "\n"
@@ -176,7 +183,7 @@ class Environment:
                 currentStateNo = getStateNoFromXY(state=self.currentAgent2Coords,
                                                   basesForStateNo=[self.xDimension, self.yDimension])
 
-                selectedAction = self.agent.selectAction(currentStateNo)
+                selectedAction = self.agent.selectAction(currentStateNo, a)
                 previousAgentCoords = self.currentAgent2Coords
                 self.currentAgent2Coords = self.getNextStateXY(previousAgentCoords, selectedAction, a)
 
@@ -184,7 +191,7 @@ class Environment:
 
                 nextStateNo = getStateNoFromXY(state=self.currentAgent2Coords,
                                                basesForStateNo=[self.xDimension, self.yDimension])
-                self.agent.updateQValue(currentStateNo, selectedAction, nextStateNo, reward)
+                self.agent.updateQValue(currentStateNo, selectedAction, nextStateNo, reward, a)
 
                 output += "-----\n"
                 output += "Previous Agent 2 Coords = " + str(previousAgentCoords) + "\n"
@@ -269,7 +276,14 @@ class Environment:
             self.agent.setEpsilon(self.agent, self.epsilon)
 
     def getQTable(self):
-        return self.agent.copyQTable()
+        qTable1 = None
+        qTable2 = None
+        for a in range(self.numAgents):
+            if a == 0:
+                qTable1 = self.agent.copyQTable(a)
+            elif a == 1:
+                qTable2 = self.agent.copyQTable(a)
+        return qTable1, qTable2
 
     def getXDimension(self):
         return self.xDimension

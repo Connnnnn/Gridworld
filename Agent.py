@@ -12,7 +12,8 @@ class Agent:
             self,
             numStates,
             numActions,
-            qTable,
+            qTable1,
+            qTable2,
             alpha=0.1,
             gamma=0.9,
             epsilon=0.1,
@@ -20,73 +21,81 @@ class Agent:
     ):
         self.numStates = numStates
         self.numActions = numActions
-        self.qTable = qTable
+        self.qTable1 = qTable1
+        self.qTable2 = qTable2
         self.alpha = alpha
         self.gamma = gamma
         self.epsilon = epsilon
         self.debug = debug
 
-    def getMaxQValue(self, state):
-        maxIndex = self.getMaxValuedAction(state)
-        return self.qTable[state][maxIndex]
+    def getMaxQValue(self, state, agent):
+        maxIndex = self.getMaxValuedAction(state, agent)
+        if agent == 0:
+            return self.qTable1[state][maxIndex]
+        elif agent == 1:
+            return self.qTable2[state][maxIndex]
 
-    def getMaxValuedAction(self, state):
+    def getMaxValuedAction(self, state, agent):
         maxIndex = -1
         maxValue = -sys.float_info.max
-
-        for action in range(0, self.numActions):
-            # print(str(action)+" = "+str(self.qTable[state][action]))
-            if self.qTable[state][action] > maxValue:
-                # print(maxValue)
-                maxIndex = action
-                maxValue = self.qTable[state][action]
-                # print(maxValue)
+        if agent == 0:
+            for action in range(0, 4):
+                # print(str(action)+" = "+str(self.qTable[state][action]))
+                if self.qTable1[state][action] > maxValue:
+                    # print(maxValue)
+                    maxIndex = action
+                    maxValue = self.qTable1[state][action]
+                    # print(maxValue)
+        elif agent == 1:
+            for action in range(0, 4):
+                # print(str(action)+" = "+str(self.qTable[state][action]))
+                if self.qTable2[state][action] > maxValue:
+                    # print(maxValue)
+                    maxIndex = action
+                    maxValue = self.qTable2[state][action]
+                    # print(maxValue)
 
         return maxIndex
 
-    def updateQValue(self, previousState, selectedAction, currentState, reward):
+    def updateQValue(self, previousState, selectedAction, currentState, reward, agent):
+        if agent == 0:
+            oldQ = self.qTable1[previousState][selectedAction]
+            maxQ = self.getMaxQValue(currentState, agent)
+            newQ = oldQ + self.alpha * (reward + (self.gamma * maxQ) - oldQ)
+            # print("Previous state "+str(previousState))
+            # print("selected action "+str(selectedAction))
+            # print("Curr state " + str(currentState))
+            # print("Reward " + str(reward))
 
-        # All q values are initialised at zero and never have the chance to go higher
-        # PROBLEM - MAX Q IS ALWAYS ZERO
+            # print(oldQ)
+            # print(self.alpha)
+            # print(self.gamma)
+            # print(str(maxQ))
 
-        # print("Previous state "+str(previousState))
-        # print("selected action "+str(selectedAction))
-        # print("Curr state " + str(currentState))
-        # print("Reward " + str(reward))
+            # print(newQ)
+            # print("Old QTable -  " + str(self.qTable))
 
-        oldQ = self.qTable[previousState][selectedAction]
-        maxQ = self.getMaxQValue(currentState)
-        newQ = oldQ + self.alpha * (reward + (self.gamma * maxQ) - oldQ)
-
-        # print(oldQ)
-        # print(self.alpha)
-        # print(self.gamma)
-        # print(str(maxQ))
-
-        # print(newQ)
-        # print("Old QTable -  " + str(self.qTable))
-        self.qTable[previousState][selectedAction] = newQ
+            self.qTable1[previousState][selectedAction] = newQ
+        elif agent == 1:
+            oldQ = self.qTable2[previousState][selectedAction]
+            maxQ = self.getMaxQValue(currentState, agent)
+            newQ = oldQ + self.alpha * (reward + (self.gamma * maxQ) - oldQ)
+            self.qTable2[previousState][selectedAction] = newQ
         # print("New QTable -  " + str(self.qTable))
 
-    def selectAction(self, state):
+    def selectAction(self, state, agent):
         selectedAction = -1
         randomValue = random.uniform(0, 1)
 
-        if self.debug:
-            print("Agent: selecting action, epsilon=" + str(self.epsilon) + ", randomValue=" + str(randomValue))
-
         if randomValue < self.epsilon:
             selectedAction = self.selectRandomAction()
-        if self.debug:
-            print("Agent: selected action " + str(selectedAction) + " at random")
-
         else:
-            selectedAction = self.getMaxValuedAction(state)
+            selectedAction = self.getMaxValuedAction(state, agent)
 
         return selectedAction
 
     def selectRandomAction(self):
-        return random.randint(1, 2) * self.numActions
+        return random.randint(0, self.numActions-1)
 
     def enableDebugging(self):
         self.debug = True
@@ -112,11 +121,16 @@ class Agent:
     def setEpsilon(self, epsilon):
         self.epsilon = epsilon
 
-    def copyQTable(self):
-        copyQTable = copy.deepcopy(self.qTable)
+    def copyQTable(self, agent):
+        copyQTable = None
+        if agent == 0:
+            copyQTable = copy.deepcopy(self.qTable1)
+        elif agent == 1:
+            copyQTable = copy.deepcopy(self.qTable2)
         return copyQTable
 
     def setQtable(self, values):
+
         for s in range(0, self.numStates):
             for a in range(0, self.numActions):
-                self.qTable[s][a] = values[s][a]
+                self.qTable1[s][a] = values[s][a]

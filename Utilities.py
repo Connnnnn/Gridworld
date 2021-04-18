@@ -13,17 +13,6 @@ def getXYfromStateNo(stateNo, basesForStateNo):
     return state
 
 
-def qTableAsString(qTable, basesForStateNo):
-    output = "State#	Xcoord	Ycoord	|	North	East	South	West"
-
-    for s in range(len(qTable)):
-        coord = getXYfromStateNo(stateNo=s, basesForStateNo=basesForStateNo)
-        output += "\n " + str(s) + "		" + str(coord[0]) + "		" + str(coord[
-                                                                                     1]) + "		|	" + f'{qTable[s][0]:.3g}' + "	" + f'{qTable[s][1]:.3g}' + "	" + f'{qTable[s][2]:.3g}' + "	" + f'{qTable[s][3]:.3g} '
-
-    return output
-
-
 def getStateNoFromXY(state, basesForStateNo):
     numStates = basesForStateNo[0] * basesForStateNo[1]
     stateNo = 0
@@ -32,26 +21,11 @@ def getStateNoFromXY(state, basesForStateNo):
         stateNo = stateNo * basesForStateNo[i] + state[i]
 
     if stateNo >= numStates or stateNo < 0:
-        print("Vector Conversion Error - X: " + state[0] + " Y: " + state[1])
-        print("Resultant State Number " + stateNo)
-        print("max allowed states: " + numStates)
+        print("Vector Conversion Error - X: " + str(state[0]) + " Y: " + str(state[1]))
+        print("Resultant State Number " + str(stateNo))
+        print("max allowed states: " + str(numStates))
 
     return stateNo
-
-
-# def resultsToCSVStr(results):
-#     output = "Episode No.,"
-#
-#     for run in results:
-#         output += "Run" + str(run) + "Steps,"
-#
-#     for time in range(len(results[0])):
-#
-#         output += "\n" + str(time) + ","
-#         for run in range(len(results)):
-#             output += "" + str(results[run][time]) + ","
-#
-#     return output
 
 
 def resultsToCSVFile(results1, results2, experimentName):
@@ -64,24 +38,53 @@ def resultsToCSVFile(results1, results2, experimentName):
 
     for time in range(len(results1[0])):
 
-        output.append(str(time) + str(","))
+        output.append(str(time))
 
         for run in range(0, len(results1)):
-            output.append(str(results1[run][time]) + str(','))
-
-    # resultsTable = resultsToCSVStr(results1)
+            output.append(str(results1[run][time]))
 
     with open("out/" + experimentName + "/" + experimentName + "_stepsToGoal.csv", mode='w') as out:
         writer = csv.writer(out, delimiter=",")
         writer.writerows(output)
 
 
-def QTablesToFile(QTables, basesForStateNo, experimentName):
+def qTableAsString(qTable1, qTable2, basesForStateNo):
+    output = "State#	Xcoord	Ycoord	|	North	East	South	West \t\t\t\t\t\t\t\t\t| State#	Xcoord	Ycoord	|	North	East	South	West"
+
+    for s in range(len(qTable1)):
+        temp = ""
+        coord = getXYfromStateNo(stateNo=s, basesForStateNo=basesForStateNo)
+        temp += "\n " + str(s) + "\t\t" + str(coord[0]) + "\t\t" + str(coord[
+                                                                           1]) + "\t\t|\t" + f'{qTable1[s][0]:.3g} \t' + "\t" + f'{qTable1[s][1]:.3g}\t' + "\t" + f'{qTable1[s][2]:.3g}\t' + "\t" + f'{qTable1[s][3]:.3g}'
+        output += temp
+        length = len(temp)
+
+        if length > 42:
+            output += "\t\t\t\t\t\t|\t"
+        elif 42 >= length > 38:
+            output += "\t\t\t\t\t\t|\t"
+        elif 38 >= length > 34:
+            output += "\t\t\t\t\t\t\t|\t"
+        elif 34 >= length > 30:
+            output += "\t\t\t\t\t\t\t\t|\t"
+        elif 30 >= length:
+            output += "\t\t\t\t\t\t\t\t\t\t|\t"
+
+        output += str(s) + "\t\t" + str(coord[0]) + "\t\t"+str(coord[
+                          1]) + "\t\t|\t" + f'{qTable2[s][0]:.3g}' + "\t\t" + f'{qTable2[s][1]:.3g}' + "\t\t" + f'{qTable2[s][2]:.3g}' + "\t\t" + f'{qTable2[s][3]:.3g}'
+
+    return output
+
+
+def QTablesToFile(QTables1, QTables2, basesForStateNo, experimentName, numAgents):
     output = ""
 
-    for run in range(len(QTables)):
-        output += "*************** Q table for run " + str(run) + " ***************\n"
-        output += qTableAsString(QTables[run], basesForStateNo) + "\n\n"
+    for run in range(len(QTables1)):
+        output += "*************** Q table for run " + str(run+1) + " ***************\n"
+        for a in range(numAgents):
+            output += f"|*************** Agent {a + 1} ***************| \t\t\t\t\t\t\t\t\t\t\t\t\t"
+        output += "\n"
+        output += qTableAsString(QTables1[run], QTables2[run], basesForStateNo) + "\n\n"
 
     file = open("out/" + experimentName + "/" + experimentName + "_QTables.txt", "w")
     file.write(output)
