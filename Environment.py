@@ -201,24 +201,37 @@ class Environment:
         file.write(output)
 
     def calculateReward(self, currentAgentCoords, agentNum):
-
+        output = ""
+        reward = 0
         if agentNum == 0:
+            output += "Coords = " + str(currentAgentCoords) + "\n"
+            output += "Goal X = " + str(self.goal1LocationXY[0]) + "\n"
+            output += "Goal Y = " + str(self.goal1LocationXY[1]) + "\n"
+
+            if currentAgentCoords[0] == 0 and currentAgentCoords[1] == 4:
+                print("Valhalla")
             if currentAgentCoords[0] == self.goal1LocationXY[0] & currentAgentCoords[1] == self.goal1LocationXY[1]:
                 reward = self.goalReward
+                print("apples")
+                output += "Reward = " + str(reward) + "\n"
                 self.goalReachedA = True
             elif currentAgentCoords[0] == self.goal2LocationXY[0] & currentAgentCoords[1] == self.goal2LocationXY[1]:
                 reward = self.stepPenalty
             else:
                 reward = self.stepPenalty
-        else:
+        elif agentNum == 1:
+            print(self.goal2LocationXY)
             if currentAgentCoords[0] == self.goal2LocationXY[0] & currentAgentCoords[1] == self.goal2LocationXY[1]:
+                print(currentAgentCoords[0])
+                print(currentAgentCoords[1])
                 reward = self.goalReward
                 self.goalReachedB = True
             elif currentAgentCoords[0] == self.goal1LocationXY[0] & currentAgentCoords[1] == self.goal1LocationXY[1]:
                 reward = self.stepPenalty
             else:
                 reward = self.stepPenalty
-
+        file = open("out/Test2.txt", "a")
+        file.write(output)
         return reward
 
     def getNextStateXY(self, currentStateXY, action, agentNum):
