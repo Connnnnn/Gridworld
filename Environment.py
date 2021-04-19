@@ -1,14 +1,15 @@
 import ast
 import configparser
+import matplotlib.pyplot as plt
 
 from Agent import *
 from Utilities import *
 
 env0 = ["MA2-SD.txt"]
-env1 = ["MA-CL-0"]
-env2 = ["MA-CL-0", "MA-CL-1", "MA-CL-2", "MA-CL-3"]
+env1 = ["MA-CL-1"]
+env2 = ["MA-CL-1", "MA-CL-2", "MA-CL-3", "MA-CL-4"]
 parser = configparser.ConfigParser()
-env = env0
+env = env2
 parser.read(str(env[0]))
 
 
@@ -46,6 +47,8 @@ class Environment:
             epsilonDecayRate=float(parser.get("config", "epsilonDecayRate")),
             movesToGoal1=None,
             movesToGoal2=None,
+            HeatMapA1=None,
+            HeatMapA2=None,
             qTable1=None,
             qTable2=None,
             obstacles=ast.literal_eval(parser.get("config", "obstacles"))
@@ -74,6 +77,11 @@ class Environment:
             movesToGoal1 = []
         if movesToGoal2 is None:
             movesToGoal2 = []
+
+        if HeatMapA1 is None:
+            HeatMapA1 = []
+        if HeatMapA2 is None:
+            HeatMapA2 = []
 
         self.agent = None
         self.numActions = numActions
@@ -106,9 +114,14 @@ class Environment:
         self.epsilonDecayRate = epsilonDecayRate
         self.movesToGoal1 = movesToGoal1
         self.movesToGoal2 = movesToGoal2
+        self.HeatMapA1 = HeatMapA1
+        self.HeatMapA2 = HeatMapA2
         self.qTable1 = qTable1
         self.qTable2 = qTable2
         self.obstacles = obstacles
+
+    def initialiseHeatmap(self):
+        return [[0 for _ in range(self.xDimension)] for _ in range(self.yDimension)]
 
     def setupAgent(self):
 
@@ -127,6 +140,10 @@ class Environment:
             self.setupAgent()
         # Do loop of number of experiments
         for e in range(0, len(env)):
+            self.HeatMapA1 = self.initialiseHeatmap()
+            self.HeatMapA2 = self.initialiseHeatmap()
+
+
 
             output = ""
             output += f"--------------Experiment {e + 1} ------------------------ \n"
@@ -135,7 +152,8 @@ class Environment:
 
             if len(env) > 1:
                 self.configChange(e)
-            # Make method to change variables based on the file, have an array of environments file names, cycle through
+                print(f"\n\t\t********** Experiment {e + 1} - " + str(env[e]) + " starting **********")
+
             for f in range(0, self.numEpisodes):
                 self.doEpisode()
                 output = ""
@@ -143,6 +161,19 @@ class Environment:
                 file = open("out/Test.txt", "a")
 
                 file.write(output)
+                # print(self.HeatMapA1)
+            plt.title(f'Heatmap Agent 1 - Experiment {e+1}')
+
+            plt.imshow(self.HeatMapA1, cmap='hot', interpolation='nearest')
+            plt.xlabel('X Axis')
+            plt.ylabel('Y Axis')
+            plt.show()
+
+            plt.imshow(self.HeatMapA2, cmap='hot', interpolation='nearest')
+            plt.title(f'Heatmap Agent 2 - Experiment {e+1}')
+            plt.xlabel('X Axis')
+            plt.ylabel('Y Axis')
+            plt.show()
 
     def configChange(self, e):
 
@@ -210,6 +241,8 @@ class Environment:
                 output += "Current Agent 1 Coords = " + str(self.currentAgent1Coords) + "\n"
                 output += "Agent 1 Reward = " + str(reward) + "\n"
 
+                self.HeatMapA1[self.currentAgent1Coords[0]][self.currentAgent1Coords[1]] += 1
+
             if a == 1:
                 currentStateNo = getStateNoFromXY(state=self.currentAgent2Coords,
                                                   basesForStateNo=[self.xDimension, self.yDimension])
@@ -228,6 +261,8 @@ class Environment:
                 output += "Previous Agent 2 Coords = " + str(previousAgentCoords) + "\n"
                 output += "Current Agent 2 Coords = " + str(self.currentAgent2Coords) + "\n"
                 output += "Agent 2 Reward = " + str(reward) + "\n"
+
+                self.HeatMapA2[self.currentAgent2Coords[0]][self.currentAgent2Coords[1]] += 1
         file = open("out/Test.txt", "a")
         file.write(output)
 

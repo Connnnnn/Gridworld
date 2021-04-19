@@ -13,7 +13,7 @@ class Grid:
             results2=None,
             QTables1=None,
             QTables2=None,
-            numRuns=10,
+            numRuns=3,
             experimentName="Gridworld_" + str(round(time.time() * 1000))
     ):
         if QTables1 is None:

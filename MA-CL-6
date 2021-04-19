@@ -1,0 +1,27 @@
+[config]
+xDimensions = 10
+yDimensions = 10
+numEpisodes=100
+maxTimesteps=100
+numAgents=2
+alpha=0.3
+alphaDecayRate=0.5
+gamma=0.95
+epsilon=0.2
+epsilonDecayRate=0.5
+agent1StartXY = [0, 0]
+agent2StartXY = [9, 0]
+goal1LocationXY = [9, 9]
+goal2LocationXY = [0, 9]
+obstacles = [
+    [0, 0, 0, 1, 0, 0, 1, 0, 1, 0],
+    [0, 1, 0, 1, 0, 0, 0, 0, 1, 0],
+    [0, 1, 0, 0, 0, 1, 1, 0, 1, 0],
+    [0, 0, 1, 1, 0, 0, 1, 0, 0, 0],
+    [1, 1, 1, 1, 1, 0, 1, 1, 1, 1],
+	[1, 1, 1, 1, 1, 0, 1, 1, 1, 1],
+    [0, 0, 1, 1, 0, 0, 1, 0, 0, 0],
+    [0, 1, 0, 0, 0, 1 1, 0, 1, 0],
+    [0, 1, 0, 1, 0, 0, 0, 0, 1, 0],
+    [0, 0, 0, 1, 0, 0, 1, 0, 1, 0],
+ ]
