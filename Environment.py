@@ -7,14 +7,6 @@ import matplotlib.pyplot as plt
 from Agent import *
 from Utilities import *
 
-env0 = ["MA2-SD.txt"]
-env1 = ["MA-CL-1"]
-env2 = ["MA-CL-1", "MA-CL-2", "MA-CL-3", "MA-CL-4"]
-env3 = ["MA-CL-1", "MA-CL-2", "MA-CL-3", "MA-CL-4", "MA-CL-5", "MA-CL-6"]
-parser = configparser.ConfigParser()
-env = env3
-parser.read(str(env[0]))
-
 
 class Environment:
 
@@ -22,10 +14,10 @@ class Environment:
             self,
             numActions=4,
             actionLabels=("North", "East", "South", "West"),
-            xDimension=int(parser.get("config", "xDimensions")),
-            yDimension=int(parser.get("config", "yDimensions")),
-            numEpisodes=int(parser.get("config", "numEpisodes")),
-            maxTimesteps=int(parser.get("config", "maxTimesteps")),
+            xDimension=None,
+            yDimension=None,
+            numEpisodes=None,
+            maxTimesteps=None,
             goalReachedA=False,
             goalReachedB=False,
             goal1LocationXY=None,
@@ -34,38 +26,28 @@ class Environment:
             agent2StartXY=None,
             goalReward=10.0,
             stepPenalty=-1.0,
-            numAgents=int(parser.get("config", "numAgents")),
+            numAgents=None,
             debug=True,
 
             currentAgent1Coords=None,
             previousAgent1Coords=None,
             currentAgent2Coords=None,
             previousAgent2Coords=None,
-            alpha=float(parser.get("config", "alpha")),
+            alpha=None,
             alphaDecays=False,
-            alphaDecayRate=float(parser.get("config", "alphaDecayRate")),
-            gamma=float(parser.get("config", "gamma")),
-            epsilon=float(parser.get("config", "epsilon")),
+            alphaDecayRate=None,
+            gamma=None,
+            epsilon=None,
             epsilonDecays=False,
-            epsilonDecayRate=float(parser.get("config", "epsilonDecayRate")),
+            epsilonDecayRate=None,
             movesToGoal1=None,
             movesToGoal2=None,
             HeatMapA1=None,
             HeatMapA2=None,
             qTable1=None,
             qTable2=None,
-            obstacles=ast.literal_eval(parser.get("config", "obstacles"))
+            obstacles=None
     ):
-
-        if agent1StartXY is None:
-            agent1StartXY = ast.literal_eval(parser.get("config", "agent1StartXY"))
-        if agent2StartXY is None:
-            agent2StartXY = ast.literal_eval(parser.get("config", "agent2StartXY"))
-
-        if goal1LocationXY is None:
-            goal1LocationXY = ast.literal_eval(parser.get("config", "goal1LocationXY"))
-        if goal2LocationXY is None:
-            goal2LocationXY = ast.literal_eval(parser.get("config", "goal2LocationXY"))
 
         if currentAgent1Coords is None:
             currentAgent1Coords = [-1, -1]
@@ -142,7 +124,7 @@ class Environment:
         if not os.path.exists(path2):
             os.makedirs(path2)
 
-        filename1 = path1 + "Run" + str(run + 1) + "Agent1-Experiment" + str(e + 1) + ".png"
+        filename1 = path1 + "Agent1-Experiment" + str(e + 1) + "Run" + str(run + 1) + ".png"
         plt.savefig(filename1)
         plt.show()
         plt.close()
@@ -153,7 +135,7 @@ class Environment:
         plt.ylabel('Y Axis')
 
         plt.draw()
-        filename2 = path2 + "Run" + str(run + 1) + "Agent1-Experiment" + str(e + 1) + ".png"
+        filename2 = path1 + "Agent2-Experiment" + str(e + 1) + "Run" + str(run + 1) + ".png"
 
         plt.savefig(filename2)
         plt.show()
@@ -171,43 +153,45 @@ class Environment:
         if self.debug:
             self.agent.enableDebugging()
 
-    def initialiseAgents(self):
+    def initialiseAgents(self, exp):
+        self.configChange(0, exp)
+
         for a in range(self.numAgents):
             self.setupAgent()
 
-    def doExperiment(self, run, experimentName):
+    def doExperiment(self, run, experimentName, exp, e):
 
         # Do loop of number of experiments
-        for e in range(0, len(env)):
-            self.configChange(e)
-            self.HeatMapA1 = self.initialiseHeatmap()
-            self.HeatMapA2 = self.initialiseHeatmap()
+
+        self.configChange(e, exp)
+        self.HeatMapA1 = self.initialiseHeatmap()
+        self.HeatMapA2 = self.initialiseHeatmap()
+
+        if self.debug is True:
+            output = ""
+            output += f"--------------Experiment {e + 1} ------------------------ \n"
+            file = open("out/Test.txt", "a")
+            file.write(output)
+
+        for f in range(0, self.numEpisodes):
+            self.doEpisode()
 
             if self.debug is True:
                 output = ""
-                output += f"--------------Experiment {e + 1} ------------------------ \n"
+                output += f"--------------Episode {f} ------------------------ \n"
                 file = open("out/Test.txt", "a")
+
                 file.write(output)
+        if self.debug is True:
+            self.heatmapPrint(run, e, experimentName)
 
-            print(f"\n\t\t********** Experiment {e + 1} - " + str(env[e]) + " starting **********")
-
-            for f in range(0, self.numEpisodes):
-                self.doEpisode()
-
-                if self.debug is True:
-                    output = ""
-                    output += f"--------------Episode {f} ------------------------ \n"
-                    file = open("out/Test.txt", "a")
-
-                    file.write(output)
-            if self.debug is True:
-                self.heatmapPrint(run, e, experimentName)
-
-    def configChange(self, e):
+    def configChange(self, e, exp):
         parser = configparser.ConfigParser()
-        parser.read(env[e])
+        parser.read(exp[e])
 
         self.xDimension = int(parser.get("config", "xDimensions"))
+        self.alpha = float(parser.get("config", "alpha"))
+        self.gamma = float(parser.get("config", "gamma"))
         self.yDimension = int(parser.get("config", "yDimensions"))
         self.numEpisodes = int(parser.get("config", "numEpisodes"))
         self.maxTimesteps = int(parser.get("config", "maxTimesteps"))
@@ -261,7 +245,7 @@ class Environment:
 
                 nextStateNo = getStateNoFromXY(state=self.currentAgent1Coords,
                                                basesForStateNo=[self.xDimension, self.yDimension])
-                self.agent.updateQValue(currentStateNo, selectedAction, nextStateNo, reward, a)
+                self.agent.updateQValue(currentStateNo, selectedAction, nextStateNo, reward, a, self)
 
                 self.HeatMapA1[self.currentAgent1Coords[0]][self.currentAgent1Coords[1]] += 1
 
@@ -283,7 +267,7 @@ class Environment:
 
                 nextStateNo = getStateNoFromXY(state=self.currentAgent2Coords,
                                                basesForStateNo=[self.xDimension, self.yDimension])
-                self.agent.updateQValue(currentStateNo, selectedAction, nextStateNo, reward, a)
+                self.agent.updateQValue(currentStateNo, selectedAction, nextStateNo, reward, a, self)
 
                 self.HeatMapA2[self.currentAgent2Coords[0]][self.currentAgent2Coords[1]] += 1
                 if self.debug is True:

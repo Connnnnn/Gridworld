@@ -57,20 +57,21 @@ class Agent:
 
         return maxIndex
 
-    def updateQValue(self, previousState, selectedAction, currentState, reward, agent):
+    def updateQValue(self, previousState, selectedAction, currentState, reward, agent, env):
         if agent == 0:
+
             oldQ = self.qTable1[previousState][selectedAction]
             maxQ = self.getMaxQValue(currentState, agent)
-            newQ = oldQ + self.alpha * (reward + (self.gamma * maxQ) - oldQ)
+            newQ = oldQ + env.alpha * (reward + (env.gamma * maxQ) - oldQ)
+
+            # print("Max Q =" + str(str(maxQ)))
+            # print("Alpha = " + str(env.alpha))
+            # print("Gamma = " + str(env.gamma))
+            # print("Old Q = " + str(oldQ))
             # print("Previous state "+str(previousState))
             # print("selected action "+str(selectedAction))
             # print("Curr state " + str(currentState))
             # print("Reward " + str(reward))
-
-            #print("Old Q = "+str(oldQ))
-            #print("Alpha = "+str(self.alpha))
-            #print("Gamma = "+str(self.gamma))
-            #print("Max Q ="+str(str(maxQ)))
 
             # print(newQ)
             # print("Old QTable -  " + str(self.qTable))
@@ -79,7 +80,7 @@ class Agent:
         elif agent == 1:
             oldQ = self.qTable2[previousState][selectedAction]
             maxQ = self.getMaxQValue(currentState, agent)
-            newQ = oldQ + self.alpha * (reward + (self.gamma * maxQ) - oldQ)
+            newQ = oldQ + env.alpha * (reward + (env.gamma * maxQ) - oldQ)
             self.qTable2[previousState][selectedAction] = newQ
         # print("New QTable -  " + str(self.qTable))
 
@@ -95,7 +96,7 @@ class Agent:
         return selectedAction
 
     def selectRandomAction(self):
-        return random.randint(0, self.numActions-1)
+        return random.randint(0, self.numActions - 1)
 
     def enableDebugging(self):
         self.debug = True

@@ -6,11 +6,11 @@ from Environment import Environment
 import pandas as pd
 import matplotlib.pyplot as plt
 
-env0 = ["MA2-SD.txt"]
-env1 = ["MA-CL-1"]
-env2 = ["MA-CL-1", "MA-CL-2", "MA-CL-3", "MA-CL-4"]
-env3 = ["MA-CL-1", "MA-CL-2", "MA-CL-3", "MA-CL-4", "MA-CL-5", "MA-CL-6"]
-env = env3
+exp0 = ["MA2-SD.txt"]
+exp1 = ["MA-CL-1"]
+exp2 = ["MA-CL-1", "MA-CL-2", "MA-CL-3", "MA-CL-4"]
+exp3 = ["MA-CL-1", "MA-CL-2", "MA-CL-3", "MA-CL-4", "MA-CL-5", "MA-CL-6"]
+exp = exp3
 
 
 class Grid:
@@ -47,33 +47,34 @@ class Grid:
             os.makedirs(path)
 
         env = Environment()
-        env.initialiseAgents()
+        env.initialiseAgents(exp)
 
-        for run in range(0, self.numRuns):
-            print("\nGridWorld: *************** Run " + str(run + 1) + " starting ***************")
+        for e in range(0, len(exp)):
+            print(f"\n*************** Experiment {e + 1} - " + str(exp[e]) + " starting **********")
+            for run in range(0, self.numRuns):
+                print("\n\t\tGridWorld: *************** Run " + str(run + 1) + " starting ***************")
 
-            env.doExperiment(run, self.experimentName)
-            res1 = env.getMovesToGoal1()
-            res2 = env.getMovesToGoal2()
-            self.results1.append(res1)
-            self.results2.append(res2)
+                env.doExperiment(run, self.experimentName, exp, e)
+                res1 = env.getMovesToGoal1()
+                res2 = env.getMovesToGoal2()
+                self.results1.append(res1)
+                self.results2.append(res2)
 
-            # if run == 0:
-            #     df = pd.DataFrame(res1, columns=['Moves-to-Goal'])
-            #     df.loc[0] = run, res1
-            #     df.plot(y='Moves-to-Goal', kind='line')
-            #     plt.title("Moves to Goal")
-            #     plt.show()
+                # if run == 0:
+                #     df = pd.DataFrame(res1, columns=['Moves-to-Goal'])
+                #     df.loc[0] = run, res1
+                #     df.plot(y='Moves-to-Goal', kind='line')
+                #     plt.title("Moves to Goal")
+                #     plt.show()
 
-            qTable1, qTable2 = env.getQTable()
-            self.QTables1.append(qTable1)
-            self.QTables2.append(qTable2)
+                qTable1, qTable2 = env.getQTable()
+                self.QTables1.append(qTable1)
+                self.QTables2.append(qTable2)
 
         resultsToCSVFile(results1=self.results1, results2=self.results2, experimentName=self.experimentName)
         QTablesToFile(QTables1=self.QTables1, QTables2=self.QTables2,
                       basesForStateNo=[Environment.getXDimension(env), Environment.getYDimension(env)],
-                      experimentName=self.experimentName, numAgents=env.numAgents)
-        # print(df)
+                      experimentName=self.experimentName, numAgents=env.numAgents, experiments=exp, numRuns=self.numRuns)
 
 
 if __name__ == '__main__':

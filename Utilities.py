@@ -76,15 +76,17 @@ def qTableAsString(qTable1, qTable2, basesForStateNo):
     return output
 
 
-def QTablesToFile(QTables1, QTables2, basesForStateNo, experimentName, numAgents):
+def QTablesToFile(QTables1, QTables2, basesForStateNo, experimentName, numAgents, experiments, numRuns):
     output = ""
 
-    for run in range(len(QTables1)):
-        output += "*************** Q table for run " + str(run+1) + " ***************\n"
-        for a in range(numAgents):
-            output += f"|*************** Agent {a + 1} ***************| \t\t\t\t\t\t\t\t\t\t\t\t\t"
-        output += "\n"
-        output += qTableAsString(QTables1[run], QTables2[run], basesForStateNo) + "\n\n"
+    for e in range(0, len(experiments)):
+        output += "*************** Experiment " + str(e + 1) + " ***************\n"
+        for run in range(numRuns):
+            output += "*************** Q table for run " + str(run+1) + " ***************\n"
+            for a in range(numAgents):
+                output += f"|*************** Agent {a + 1} ***************| \t\t\t\t\t\t\t\t\t\t\t\t\t"
+            output += "\n"
+            output += qTableAsString(QTables1[run], QTables2[run], basesForStateNo) + "\n\n"
 
     file = open("out/" + experimentName + "/" + experimentName + "_QTables.txt", "w")
     file.write(output)
