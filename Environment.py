@@ -1,5 +1,7 @@
 import ast
 import configparser
+import os
+
 import matplotlib.pyplot as plt
 
 from Agent import *
@@ -8,8 +10,9 @@ from Utilities import *
 env0 = ["MA2-SD.txt"]
 env1 = ["MA-CL-1"]
 env2 = ["MA-CL-1", "MA-CL-2", "MA-CL-3", "MA-CL-4"]
+env3 = ["MA-CL-1", "MA-CL-2", "MA-CL-3", "MA-CL-4", "MA-CL-5", "MA-CL-6"]
 parser = configparser.ConfigParser()
-env = env2
+env = env3
 parser.read(str(env[0]))
 
 
@@ -32,7 +35,7 @@ class Environment:
             goalReward=10.0,
             stepPenalty=-1.0,
             numAgents=int(parser.get("config", "numAgents")),
-            debug=False,
+            debug=True,
 
             currentAgent1Coords=None,
             previousAgent1Coords=None,
@@ -123,6 +126,39 @@ class Environment:
     def initialiseHeatmap(self):
         return [[0 for _ in range(self.xDimension)] for _ in range(self.yDimension)]
 
+    def heatmapPrint(self, run, e, experimentName):
+        plt.title(f'Run {run + 1}\n Heatmap Agent 1 - Experiment {e + 1}')
+
+        plt.imshow(self.HeatMapA1, cmap='hot', interpolation='nearest')
+        plt.xlabel('X Axis')
+        plt.ylabel('Y Axis')
+        plt.draw()
+
+        path1 = "out/" + experimentName + "/Heatmaps/Agent1/"
+        if not os.path.exists(path1):
+            os.makedirs(path1)
+
+        path2 = "out/" + experimentName + "/Heatmaps/Agent2/"
+        if not os.path.exists(path2):
+            os.makedirs(path2)
+
+        filename1 = path1 + "Run" + str(run + 1) + "Agent1-Experiment" + str(e + 1) + ".png"
+        plt.savefig(filename1)
+        plt.show()
+        plt.close()
+
+        plt.imshow(self.HeatMapA2, cmap='hot', interpolation='nearest')
+        plt.title(f'Run {run + 1}\n Heatmap Agent 2 - Experiment {e + 1}')
+        plt.xlabel('X Axis')
+        plt.ylabel('Y Axis')
+
+        plt.draw()
+        filename2 = path2 + "Run" + str(run + 1) + "Agent1-Experiment" + str(e + 1) + ".png"
+
+        plt.savefig(filename2)
+        plt.show()
+        plt.close()
+
     def setupAgent(self):
 
         numStates = self.getNumStates()
@@ -135,50 +171,41 @@ class Environment:
         if self.debug:
             self.agent.enableDebugging()
 
-    def doExperiment(self):
+    def initialiseAgents(self):
         for a in range(self.numAgents):
             self.setupAgent()
+
+    def doExperiment(self, run, experimentName):
+
         # Do loop of number of experiments
         for e in range(0, len(env)):
+            self.configChange(e)
             self.HeatMapA1 = self.initialiseHeatmap()
             self.HeatMapA2 = self.initialiseHeatmap()
 
+            if self.debug is True:
+                output = ""
+                output += f"--------------Experiment {e + 1} ------------------------ \n"
+                file = open("out/Test.txt", "a")
+                file.write(output)
 
-
-            output = ""
-            output += f"--------------Experiment {e + 1} ------------------------ \n"
-            file = open("out/Test.txt", "a")
-            file.write(output)
-
-            if len(env) > 1:
-                self.configChange(e)
-                print(f"\n\t\t********** Experiment {e + 1} - " + str(env[e]) + " starting **********")
+            print(f"\n\t\t********** Experiment {e + 1} - " + str(env[e]) + " starting **********")
 
             for f in range(0, self.numEpisodes):
                 self.doEpisode()
-                output = ""
-                output += f"--------------Episode {f} ------------------------ \n"
-                file = open("out/Test.txt", "a")
 
-                file.write(output)
-                # print(self.HeatMapA1)
-            plt.title(f'Heatmap Agent 1 - Experiment {e+1}')
+                if self.debug is True:
+                    output = ""
+                    output += f"--------------Episode {f} ------------------------ \n"
+                    file = open("out/Test.txt", "a")
 
-            plt.imshow(self.HeatMapA1, cmap='hot', interpolation='nearest')
-            plt.xlabel('X Axis')
-            plt.ylabel('Y Axis')
-            plt.show()
-
-            plt.imshow(self.HeatMapA2, cmap='hot', interpolation='nearest')
-            plt.title(f'Heatmap Agent 2 - Experiment {e+1}')
-            plt.xlabel('X Axis')
-            plt.ylabel('Y Axis')
-            plt.show()
+                    file.write(output)
+            if self.debug is True:
+                self.heatmapPrint(run, e, experimentName)
 
     def configChange(self, e):
-
-        parse = configparser.ConfigParser()
-        parse.read(str(env[e]))
+        parser = configparser.ConfigParser()
+        parser.read(env[e])
 
         self.xDimension = int(parser.get("config", "xDimensions"))
         self.yDimension = int(parser.get("config", "yDimensions"))
@@ -236,12 +263,13 @@ class Environment:
                                                basesForStateNo=[self.xDimension, self.yDimension])
                 self.agent.updateQValue(currentStateNo, selectedAction, nextStateNo, reward, a)
 
-                output += "---------------------------------------- \n"
-                output += "Previous Agent 1 Coords = " + str(previousAgentCoords) + "\n"
-                output += "Current Agent 1 Coords = " + str(self.currentAgent1Coords) + "\n"
-                output += "Agent 1 Reward = " + str(reward) + "\n"
-
                 self.HeatMapA1[self.currentAgent1Coords[0]][self.currentAgent1Coords[1]] += 1
+
+                if self.debug is True:
+                    output += "---------------------------------------- \n"
+                    output += "Previous Agent 1 Coords = " + str(previousAgentCoords) + "\n"
+                    output += "Current Agent 1 Coords = " + str(self.currentAgent1Coords) + "\n"
+                    output += "Agent 1 Reward = " + str(reward) + "\n"
 
             if a == 1:
                 currentStateNo = getStateNoFromXY(state=self.currentAgent2Coords,
@@ -257,24 +285,26 @@ class Environment:
                                                basesForStateNo=[self.xDimension, self.yDimension])
                 self.agent.updateQValue(currentStateNo, selectedAction, nextStateNo, reward, a)
 
-                output += "-----\n"
-                output += "Previous Agent 2 Coords = " + str(previousAgentCoords) + "\n"
-                output += "Current Agent 2 Coords = " + str(self.currentAgent2Coords) + "\n"
-                output += "Agent 2 Reward = " + str(reward) + "\n"
-
                 self.HeatMapA2[self.currentAgent2Coords[0]][self.currentAgent2Coords[1]] += 1
-        file = open("out/Test.txt", "a")
-        file.write(output)
+                if self.debug is True:
+                    output += "-----\n"
+                    output += "Previous Agent 2 Coords = " + str(previousAgentCoords) + "\n"
+                    output += "Current Agent 2 Coords = " + str(self.currentAgent2Coords) + "\n"
+                    output += "Agent 2 Reward = " + str(reward) + "\n"
+
+        if self.debug is True:
+            file = open("out/Test.txt", "a")
+            file.write(output)
 
     def calculateReward(self, currentAgentCoords, agentNum):
-        output = ""
+
         reward = 0
         if agentNum == 0:
 
             if currentAgentCoords[0] == self.goal1LocationXY[0] and currentAgentCoords[1] == self.goal1LocationXY[1]:
                 reward = self.goalReward
-                output += "Reward = " + str(reward) + "\n"
                 self.goalReachedA = True
+
             elif currentAgentCoords[0] == self.goal2LocationXY[0] and currentAgentCoords[1] == self.goal2LocationXY[1]:
                 reward = self.stepPenalty
             else:
@@ -283,9 +313,9 @@ class Environment:
         elif agentNum == 1:
 
             if currentAgentCoords[0] == self.goal2LocationXY[0] and currentAgentCoords[1] == self.goal2LocationXY[1]:
-
                 reward = self.goalReward
                 self.goalReachedB = True
+
             elif currentAgentCoords[0] == self.goal1LocationXY[0] and currentAgentCoords[1] == self.goal1LocationXY[1]:
                 reward = self.stepPenalty
             else:
