@@ -85,7 +85,6 @@ class Agent:
         # print("New QTable -  " + str(self.qTable))
 
     def selectAction(self, state, agent):
-        selectedAction = -1
         randomValue = random.uniform(0, 1)
 
         if randomValue < self.epsilon:

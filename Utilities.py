@@ -28,22 +28,26 @@ def getStateNoFromXY(state, basesForStateNo):
     return stateNo
 
 
-def resultsToCSVFile(results1, results2, experimentName):
-    output = ["Episode No. "]
+def resultsToCSVFile(results1, experimentName, numRuns, numEpisodes, experimentList):
+    output = [["" for _ in range(numRuns * len(experimentList) + 2)] for _ in range(numEpisodes)]
+    output[0][0] = "Episode No. "
+    for exp in range(len(experimentList)):
 
-    # Include the Second results
-    # And get the output correctly moving into their cells
-    for run in results1:
-        output[0] += f'Run{run} '
+        for run in range(numRuns):
+            output[0][(run + 1 + (exp * (numRuns + 1)))] = 'Run' + str(run + 1)
+            print("Eq " + str(run + 1 * exp))
 
-    for time in range(len(results1[0])):
+        for run in range(numRuns + 1):
+            for episode in range(0, numEpisodes):
+                if run == 0 and episode > 0:
+                    output[episode][0] = episode
+                elif episode == 0:
+                    continue
+                else:
+                    output[episode][run + exp * (numRuns + 1)] = results1[0][
+                        ((episode - 1) + numEpisodes * (run - 1) + exp * numRuns * numEpisodes)]
 
-        output.append(str(time))
-
-        for run in range(0, len(results1)):
-            output.append(str(results1[run][time]))
-
-    with open("out/" + experimentName + "/" + experimentName + "_stepsToGoal.csv", mode='w') as out:
+    with open("out/" + experimentName + "/" + experimentName + "_stepsToGoal.csv", mode='w', newline='') as out:
         writer = csv.writer(out, delimiter=",")
         writer.writerows(output)
 
@@ -70,8 +74,8 @@ def qTableAsString(qTable1, qTable2, basesForStateNo):
         elif 30 >= length:
             output += "\t\t\t\t\t\t\t\t\t\t|\t"
 
-        output += str(s) + "\t\t" + str(coord[0]) + "\t\t"+str(coord[
-                          1]) + "\t\t|\t" + f'{qTable2[s][0]:.3g}' + "\t\t" + f'{qTable2[s][1]:.3g}' + "\t\t" + f'{qTable2[s][2]:.3g}' + "\t\t" + f'{qTable2[s][3]:.3g}'
+        output += str(s) + "\t\t" + str(coord[0]) + "\t\t" + str(coord[
+                                                                     1]) + "\t\t|\t" + f'{qTable2[s][0]:.3g}' + "\t\t" + f'{qTable2[s][1]:.3g}' + "\t\t" + f'{qTable2[s][2]:.3g}' + "\t\t" + f'{qTable2[s][3]:.3g}'
 
     return output
 
@@ -82,7 +86,7 @@ def QTablesToFile(QTables1, QTables2, basesForStateNo, experimentName, numAgents
     for e in range(0, len(experiments)):
         output += "*************** Experiment " + str(e + 1) + " ***************\n"
         for run in range(numRuns):
-            output += "*************** Q table for run " + str(run+1) + " ***************\n"
+            output += "*************** Q table for run " + str(run + 1) + " ***************\n"
             for a in range(numAgents):
                 output += f"|*************** Agent {a + 1} ***************| \t\t\t\t\t\t\t\t\t\t\t\t\t"
             output += "\n"

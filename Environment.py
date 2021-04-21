@@ -108,38 +108,23 @@ class Environment:
     def initialiseHeatmap(self):
         return [[0 for _ in range(self.xDimension)] for _ in range(self.yDimension)]
 
-    def heatmapPrint(self, run, e, experimentName):
-        plt.title(f'Run {run + 1}\n Heatmap Agent 1 - Experiment {e + 1}')
+    def heatmapPrint(self, run, e, experimentName, agentNum):
 
-        plt.imshow(self.HeatMapA1, cmap='hot', interpolation='nearest')
-        plt.xlabel('X Axis')
-        plt.ylabel('Y Axis')
-        plt.draw()
+        plt.title(f'Run {run + 1}\n Heatmap Agent {agentNum+1} - Experiment {e + 1}')
+        if agentNum == 0:
+            plt.imshow(self.HeatMapA1, cmap='hot', interpolation='nearest')
+        elif agentNum == 1:
+            plt.imshow(self.HeatMapA2, cmap='hot', interpolation='nearest')
 
-        path1 = "out/" + experimentName + "/Heatmaps/Agent1/"
-        if not os.path.exists(path1):
-            os.makedirs(path1)
-
-        path2 = "out/" + experimentName + "/Heatmaps/Agent2/"
-        if not os.path.exists(path2):
-            os.makedirs(path2)
-
-        filename1 = path1 + "Agent1-Experiment" + str(e + 1) + "Run" + str(run + 1) + ".png"
-        plt.savefig(filename1)
-        plt.show()
-        plt.close()
-
-        plt.imshow(self.HeatMapA2, cmap='hot', interpolation='nearest')
-        plt.title(f'Run {run + 1}\n Heatmap Agent 2 - Experiment {e + 1}')
         plt.xlabel('X Axis')
         plt.ylabel('Y Axis')
 
-        plt.draw()
-        filename2 = path1 + "Agent2-Experiment" + str(e + 1) + "Run" + str(run + 1) + ".png"
+        path = "out/" + experimentName + "/Heatmaps/Agent" + str(agentNum+1) + "/"
+        if not os.path.exists(path):
+            os.makedirs(path)
 
-        plt.savefig(filename2)
-        plt.show()
-        plt.close()
+        filename = path + "Agent"+str(agentNum+1)+"-Experiment" + str(e + 1) + "Run" + str(run + 1) + ".png"
+        plt.savefig(filename)
 
     def setupAgent(self):
 
@@ -183,7 +168,8 @@ class Environment:
 
                 file.write(output)
         if self.debug is True:
-            self.heatmapPrint(run, e, experimentName)
+            for a in range(self.numAgents):
+                self.heatmapPrint(run, e, experimentName, a)
 
     def configChange(self, e, exp):
         parser = configparser.ConfigParser()
@@ -225,6 +211,8 @@ class Environment:
         self.decayAlpha()
         self.decayEpsilon()
         for a in range(self.numAgents):
+            # Currently are the same because when a goal is reached the episode ends
+            # Can add in a mode where game does not end for loser until both win or end of turns
             if a == 0:
                 self.movesToGoal1.append(stepsTaken)
             elif a == 1:
