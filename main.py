@@ -7,8 +7,9 @@ exp0 = ["MA2-SD.txt"]
 exp1 = ["MA-CL-1"]
 expTest = ["MA-CL-1", "MA-CL-2"]
 exp2 = ["MA-CL-1", "MA-CL-2", "MA-CL-3", "MA-CL-4"]
-exp3 = ["MA-CL-1", "MA-CL-2", "MA-CL-3", "MA-CL-4", "MA-CL-5", "MA-CL-6"]
-exp = expTest
+expCL1To6 = ["MA-CL-1", "MA-CL-2", "MA-CL-3", "MA-CL-4", "MA-CL-5", "MA-CL-6"]
+expOnly6 = ["MA-CL-6"]
+exp = expOnly6
 
 
 class Grid:
@@ -18,7 +19,7 @@ class Grid:
             results2=None,
             QTables1=None,
             QTables2=None,
-            numRuns=3,
+            numRuns=10,
             experimentName="Gridworld_" + str(round(time.time() * 1000))
     ):
         if QTables1 is None:

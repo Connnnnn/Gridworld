@@ -29,13 +29,13 @@ def getStateNoFromXY(state, basesForStateNo):
 
 
 def resultsToCSVFile(results1, experimentName, numRuns, numEpisodes, experimentList):
-    output = [["" for _ in range(numRuns * len(experimentList) + 2)] for _ in range(numEpisodes)]
+    output = [["" for _ in range(numRuns * len(experimentList) + len(experimentList))] for _ in range(numEpisodes)]
+
     output[0][0] = "Episode No. "
     for exp in range(len(experimentList)):
 
         for run in range(numRuns):
-            output[0][(run + 1 + (exp * (numRuns + 1)))] = 'Run' + str(run + 1)
-            print("Eq " + str(run + 1 * exp))
+            output[0][(run + 1 + (exp * (numRuns + 1)))] = 'Run' + str(exp + 1) + "_" + str(run + 1)
 
         for run in range(numRuns + 1):
             for episode in range(0, numEpisodes):
