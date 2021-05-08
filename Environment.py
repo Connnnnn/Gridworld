@@ -8,6 +8,10 @@ from Agent import *
 from Utilities import *
 
 
+def decision(probability):
+    return random.random() < probability
+
+
 class Environment:
 
     def __init__(
@@ -26,6 +30,9 @@ class Environment:
             agent2StartXY=None,
             goalReward=10.0,
             stepPenalty=-1.0,
+            lavaPenalty=-1.5,
+            probOfDeath=0.05,
+            death=False,
             numAgents=None,
             debug=True,
 
@@ -85,6 +92,9 @@ class Environment:
         self.agent2StartXY = agent2StartXY
         self.goalReward = goalReward
         self.stepPenalty = stepPenalty
+        self.lavaPenalty = lavaPenalty
+        self.probOfDeath = probOfDeath
+        self.death = death
 
         self.currentAgent1Coords = currentAgent1Coords
         self.previousAgent1Coords = previousAgent1Coords
@@ -110,7 +120,7 @@ class Environment:
 
     def heatmapPrint(self, run, e, experimentName, agentNum):
 
-        plt.title(f'Run {run + 1}\n Heatmap Agent {agentNum+1} - Experiment {e + 1}')
+        plt.title(f'Run {run + 1}\n Heatmap Agent {agentNum + 1} - Experiment {e + 1}')
         if agentNum == 0:
             plt.imshow(self.HeatMapA1, cmap='hot', interpolation='nearest')
         elif agentNum == 1:
@@ -119,11 +129,11 @@ class Environment:
         plt.xlabel('X Axis')
         plt.ylabel('Y Axis')
 
-        path = "out/" + experimentName + "/Heatmaps/Agent" + str(agentNum+1) + "/"
+        path = "out/" + experimentName + "/Heatmaps/Agent" + str(agentNum + 1) + "/"
         if not os.path.exists(path):
             os.makedirs(path)
 
-        filename = path + "Agent"+str(agentNum+1)+"-Experiment" + str(e + 1) + "Run" + str(run + 1) + ".png"
+        filename = path + "Agent" + str(agentNum + 1) + "-Experiment" + str(e + 1) + "Run" + str(run + 1) + ".png"
         plt.savefig(filename)
 
     def setupAgent(self):
@@ -145,8 +155,6 @@ class Environment:
             self.setupAgent()
 
     def doExperiment(self, run, experimentName, exp, e):
-
-        # Do loop of number of experiments
 
         self.configChange(e, exp)
         self.HeatMapA1 = self.initialiseHeatmap()
@@ -200,28 +208,33 @@ class Environment:
 
         self.goalReachedA = False
         self.goalReachedB = False
+        self.death = False
 
         for t in range(0, self.maxTimesteps, 1):
             if not self.goalReachedA and not self.goalReachedB:
                 self.doTimestep()
                 stepsTaken = stepsTaken + 1
+            elif self.death:
+                stepsTaken = self.maxTimesteps
+                break
             else:
                 break
 
         self.decayAlpha()
         self.decayEpsilon()
         for a in range(self.numAgents):
-            # Currently are the same because when a goal is reached the episode ends
-            # Can add in a mode where game does not end for loser until both win or end of turns
             if a == 0:
                 self.movesToGoal1.append(stepsTaken)
             elif a == 1:
                 self.movesToGoal2.append(stepsTaken)
 
     def doTimestep(self):
-        # loop this over each agent
+
         output = ""
+
         for a in range(self.numAgents):
+            lava1 = False
+            lava2 = False
             if a == 0:
                 currentStateNo = getStateNoFromXY(state=self.currentAgent1Coords,
                                                   basesForStateNo=[self.xDimension, self.yDimension])
@@ -229,7 +242,11 @@ class Environment:
                 previousAgentCoords = self.currentAgent1Coords
                 self.currentAgent1Coords = self.getNextStateXY(previousAgentCoords, selectedAction, agentNum=a)
 
-                reward = self.calculateReward(self.currentAgent1Coords, a)
+                if self.obstacles[self.currentAgent1Coords[0]][self.currentAgent1Coords[1]] == 2:
+                    lava1 = True
+                    #print("dab")
+
+                reward = self.calculateReward(self.currentAgent1Coords, a, lava1)
 
                 nextStateNo = getStateNoFromXY(state=self.currentAgent1Coords,
                                                basesForStateNo=[self.xDimension, self.yDimension])
@@ -251,7 +268,10 @@ class Environment:
                 previousAgentCoords = self.currentAgent2Coords
                 self.currentAgent2Coords = self.getNextStateXY(previousAgentCoords, selectedAction, a)
 
-                reward = self.calculateReward(self.currentAgent2Coords, a)
+                if self.obstacles[self.currentAgent2Coords[0]][self.currentAgent2Coords[1]] == 2:
+                    lava2 = True
+
+                reward = self.calculateReward(self.currentAgent2Coords, a, lava2)
 
                 nextStateNo = getStateNoFromXY(state=self.currentAgent2Coords,
                                                basesForStateNo=[self.xDimension, self.yDimension])
@@ -268,7 +288,7 @@ class Environment:
             file = open("out/Test.txt", "a")
             file.write(output)
 
-    def calculateReward(self, currentAgentCoords, agentNum):
+    def calculateReward(self, currentAgentCoords, agentNum, lava):
 
         reward = 0
         if agentNum == 0:
@@ -277,8 +297,12 @@ class Environment:
                 reward = self.goalReward
                 self.goalReachedA = True
 
-            elif currentAgentCoords[0] == self.goal2LocationXY[0] and currentAgentCoords[1] == self.goal2LocationXY[1]:
-                reward = self.stepPenalty
+            elif lava is True:
+                reward = self.lavaPenalty
+                # print("dooooooo")
+                if decision(self.probOfDeath):
+                    reward = -10
+                    self.death = True
             else:
                 reward = self.stepPenalty
 
@@ -288,8 +312,11 @@ class Environment:
                 reward = self.goalReward
                 self.goalReachedB = True
 
-            elif currentAgentCoords[0] == self.goal1LocationXY[0] and currentAgentCoords[1] == self.goal1LocationXY[1]:
-                reward = self.stepPenalty
+            elif lava is True:
+                reward = self.lavaPenalty
+                if decision(self.probOfDeath):
+                    reward = -10
+                    self.death = True
             else:
                 reward = self.stepPenalty
 
