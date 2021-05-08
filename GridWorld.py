@@ -10,7 +10,7 @@ exp2 = ["Configs/CL/MA-CL-1", "Configs/CL/MA-CL-2", "Configs/CL/MA-CL-3", "Confi
 expCL1To6 = ["Configs/CL/MA-CL-1", "Configs/CL/MA-CL-2", "Configs/CL/MA-CL-3", "Configs/CL/MA-CL-4", "Configs/CL/MA-CL-5", "Configs/CL/MA-CL-6"]
 expOnly6 = ["Configs/CL/MA-CL-6"]
 lavaExp = ["Configs/Lava/MA-Lava-1", "Configs/Lava/MA-Lava-2", "Configs/Lava/MA-Lava-3", "Configs/Lava/MA-Lava-4"]
-exp = lavaExp
+exp = expOnly6
 
 
 class Grid:
@@ -20,7 +20,7 @@ class Grid:
             results2=None,
             QTables1=None,
             QTables2=None,
-            numRuns=3,
+            numRuns=10,
             experimentName="Gridworld_" + str(round(time.time() * 1000))
     ):
         if QTables1 is None:
