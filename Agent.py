@@ -40,20 +40,18 @@ class Agent:
         maxValue = -sys.float_info.max
         if agent == 0:
             for action in range(0, 4):
-                # print(str(action)+" = "+str(self.qTable[state][action]))
+
                 if self.qTable1[state][action] > maxValue:
-                    # print(maxValue)
                     maxIndex = action
                     maxValue = self.qTable1[state][action]
-                    # print(maxValue)
+
         elif agent == 1:
             for action in range(0, 4):
-                # print(str(action)+" = "+str(self.qTable[state][action]))
+
                 if self.qTable2[state][action] > maxValue:
-                    # print(maxValue)
+
                     maxIndex = action
                     maxValue = self.qTable2[state][action]
-                    # print(maxValue)
 
         return maxIndex
 
@@ -82,7 +80,6 @@ class Agent:
             maxQ = self.getMaxQValue(currentState, agent)
             newQ = oldQ + env.alpha * (reward + (env.gamma * maxQ) - oldQ)
             self.qTable2[previousState][selectedAction] = newQ
-        # print("New QTable -  " + str(self.qTable))
 
     def selectAction(self, state, agent):
         randomValue = random.uniform(0, 1)

@@ -30,11 +30,14 @@ class Environment:
             agent2StartXY=None,
             goalReward=10.0,
             stepPenalty=-1.0,
-            lavaPenalty=-1.5,
+            lavaPenalty=-2,
+            obstaclePenalty=-2,
+            deathPenalty=-10,
             probOfDeath=0.05,
             death=False,
             numAgents=None,
             debug=True,
+            PBRS=False,
 
             currentAgent1Coords=None,
             previousAgent1Coords=None,
@@ -53,7 +56,10 @@ class Environment:
             HeatMapA2=None,
             qTable1=None,
             qTable2=None,
-            obstacles=None
+            obstacles=None,
+            PBRS1=None,
+            PBRS2=None,
+            hitObstacle=False
     ):
 
         if currentAgent1Coords is None:
@@ -93,8 +99,14 @@ class Environment:
         self.goalReward = goalReward
         self.stepPenalty = stepPenalty
         self.lavaPenalty = lavaPenalty
+        self.obstaclePenalty = obstaclePenalty
         self.probOfDeath = probOfDeath
+        self.deathPenalty = deathPenalty
         self.death = death
+        self.hitObstacle = hitObstacle
+        self.PBRS = PBRS
+        self.PBRS1 = PBRS1
+        self.PBRS2 = PBRS2
 
         self.currentAgent1Coords = currentAgent1Coords
         self.previousAgent1Coords = previousAgent1Coords
@@ -175,9 +187,9 @@ class Environment:
                 file = open("out/Test.txt", "a")
 
                 file.write(output)
-        if self.debug is True:
-            for a in range(self.numAgents):
-                self.heatmapPrint(run, e, experimentName, a)
+
+        for a in range(self.numAgents):
+            self.heatmapPrint(run, e, experimentName, a)
 
     def configChange(self, e, exp):
         parser = configparser.ConfigParser()
@@ -197,6 +209,8 @@ class Environment:
         self.goal1LocationXY = ast.literal_eval(parser.get("config", "goal1LocationXY"))
         self.goal2LocationXY = ast.literal_eval(parser.get("config", "goal2LocationXY"))
         self.obstacles = ast.literal_eval(parser.get("config", "obstacles"))
+        self.PBRS1 = ast.literal_eval(parser.get("config", "PBRS1"))
+        self.PBRS2 = ast.literal_eval(parser.get("config", "PBRS2"))
 
     def doEpisode(self):
         stepsTaken = 0
@@ -244,7 +258,6 @@ class Environment:
 
                 if self.obstacles[self.currentAgent1Coords[0]][self.currentAgent1Coords[1]] == 2:
                     lava1 = True
-                    #print("dab")
 
                 reward = self.calculateReward(self.currentAgent1Coords, a, lava1)
 
@@ -288,6 +301,9 @@ class Environment:
             file = open("out/Test.txt", "a")
             file.write(output)
 
+    def calc_pbrs_shaping(self, currentAgentCoords):
+        return self.PBRS1[currentAgentCoords[0]][currentAgentCoords[1]]
+
     def calculateReward(self, currentAgentCoords, agentNum, lava):
 
         reward = 0
@@ -296,10 +312,10 @@ class Environment:
             if currentAgentCoords[0] == self.goal1LocationXY[0] and currentAgentCoords[1] == self.goal1LocationXY[1]:
                 reward = self.goalReward
                 self.goalReachedA = True
-
+            elif self.hitObstacle is True:
+                reward = self.obstaclePenalty
             elif lava is True:
                 reward = self.lavaPenalty
-                # print("dooooooo")
                 if decision(self.probOfDeath):
                     reward = -10
                     self.death = True
@@ -311,19 +327,25 @@ class Environment:
             if currentAgentCoords[0] == self.goal2LocationXY[0] and currentAgentCoords[1] == self.goal2LocationXY[1]:
                 reward = self.goalReward
                 self.goalReachedB = True
-
+            elif self.hitObstacle is True:
+                reward = self.obstaclePenalty
             elif lava is True:
                 reward = self.lavaPenalty
                 if decision(self.probOfDeath):
-                    reward = -10
+                    reward = 0
                     self.death = True
             else:
                 reward = self.stepPenalty
+
+        if self.PBRS:
+            reward = reward + self.calc_pbrs_shaping(currentAgentCoords)
+
 
         return reward
 
     def getNextStateXY(self, currentStateXY, action, agentNum):
         nextStateXY = [-1, -1]
+        self.hitObstacle = False
 
         if action == 0:
             if currentStateXY[1] < self.yDimension - 1:
@@ -353,13 +375,16 @@ class Environment:
 
         if self.obstacles[nextStateXY[0]][nextStateXY[1]] == 1:
             nextStateXY = [currentStateXY[0], currentStateXY[1]]
+            self.hitObstacle = True
 
         if agentNum == 0:
             if nextStateXY == self.currentAgent2Coords:
                 nextStateXY = [currentStateXY[0], currentStateXY[1]]
+                self.hitObstacle = True
         elif agentNum == 1:
             if nextStateXY == self.currentAgent1Coords:
                 nextStateXY = [currentStateXY[0], currentStateXY[1]]
+                self.hitObstacle = True
 
         return nextStateXY
 
