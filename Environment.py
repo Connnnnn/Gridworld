@@ -4,6 +4,7 @@ import os
 
 import matplotlib.pyplot as plt
 
+import PBRSCalculator
 from Agent import *
 from Utilities import *
 
@@ -37,7 +38,7 @@ class Environment:
             death=False,
             numAgents=None,
             debug=True,
-            PBRS=False,
+            PBRS=True,
 
             currentAgent1Coords=None,
             previousAgent1Coords=None,
@@ -209,8 +210,16 @@ class Environment:
         self.goal1LocationXY = ast.literal_eval(parser.get("config", "goal1LocationXY"))
         self.goal2LocationXY = ast.literal_eval(parser.get("config", "goal2LocationXY"))
         self.obstacles = ast.literal_eval(parser.get("config", "obstacles"))
-        self.PBRS1 = ast.literal_eval(parser.get("config", "PBRS1"))
-        self.PBRS2 = ast.literal_eval(parser.get("config", "PBRS2"))
+
+        if not parser.has_option("config", "PBRS1"):
+            self.PBRS1 = PBRSCalculator.main(self.xDimension, self.yDimension, self.goal1LocationXY, self.obstacles)
+        else:
+            self.PBRS1 = ast.literal_eval(parser.get("config", "PBRS1"))
+
+        if not parser.has_option("config", "PBRS2"):
+            self.PBRS2 = PBRSCalculator.main(self.xDimension, self.yDimension, self.goal2LocationXY, self.obstacles)
+        else:
+            self.PBRS2 = ast.literal_eval(parser.get("config", "PBRS2"))
 
     def doEpisode(self):
         stepsTaken = 0
@@ -259,7 +268,7 @@ class Environment:
                 if self.obstacles[self.currentAgent1Coords[0]][self.currentAgent1Coords[1]] == 2:
                     lava1 = True
 
-                reward = self.calculateReward(self.currentAgent1Coords, a, lava1)
+                reward = self.calculateReward(self.currentAgent1Coords, a, lava1, previousAgentCoords)
 
                 nextStateNo = getStateNoFromXY(state=self.currentAgent1Coords,
                                                basesForStateNo=[self.xDimension, self.yDimension])
@@ -284,7 +293,7 @@ class Environment:
                 if self.obstacles[self.currentAgent2Coords[0]][self.currentAgent2Coords[1]] == 2:
                     lava2 = True
 
-                reward = self.calculateReward(self.currentAgent2Coords, a, lava2)
+                reward = self.calculateReward(self.currentAgent2Coords, a, lava2, previousAgentCoords)
 
                 nextStateNo = getStateNoFromXY(state=self.currentAgent2Coords,
                                                basesForStateNo=[self.xDimension, self.yDimension])
@@ -301,10 +310,10 @@ class Environment:
             file = open("out/Test.txt", "a")
             file.write(output)
 
-    def calc_pbrs_shaping(self, currentAgentCoords):
-        return self.PBRS1[currentAgentCoords[0]][currentAgentCoords[1]]
+    def calc_pbrs_shaping(self, currentAgentCoords, previousAgentCoords):
+        return self.gamma * self.PBRS1[currentAgentCoords[0]][currentAgentCoords[1]] - self.PBRS1[previousAgentCoords[0]][previousAgentCoords[1]]
 
-    def calculateReward(self, currentAgentCoords, agentNum, lava):
+    def calculateReward(self, currentAgentCoords, agentNum, lava, previousAgentCoords):
 
         reward = 0
         if agentNum == 0:
@@ -338,8 +347,7 @@ class Environment:
                 reward = self.stepPenalty
 
         if self.PBRS:
-            reward = reward + self.calc_pbrs_shaping(currentAgentCoords)
-
+            reward = reward + self.calc_pbrs_shaping(currentAgentCoords, previousAgentCoords)
 
         return reward
 
