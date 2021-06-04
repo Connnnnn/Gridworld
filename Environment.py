@@ -60,7 +60,11 @@ class Environment:
             obstacles=None,
             PBRS1=None,
             PBRS2=None,
-            hitObstacle=False
+            hitObstacle=False,
+            agent1Collisions=None,
+            agent2Collisions=None,
+            agent1CurrentCollisions=None,
+            agent2CurrentCollisions=None
     ):
 
         if currentAgent1Coords is None:
@@ -127,6 +131,10 @@ class Environment:
         self.qTable1 = qTable1
         self.qTable2 = qTable2
         self.obstacles = obstacles
+        self.agent1Collisions = agent1Collisions
+        self.agent2Collisions = agent2Collisions
+        self.agent1CurrentCollisions = agent1CurrentCollisions
+        self.agent2CurrentCollisions = agent2CurrentCollisions
 
     def initialiseHeatmap(self):
         return [[0 for _ in range(self.xDimension)] for _ in range(self.yDimension)]
@@ -148,6 +156,8 @@ class Environment:
 
         filename = path + "Agent" + str(agentNum + 1) + "-Experiment" + str(e + 1) + "Run" + str(run + 1) + ".png"
         plt.savefig(filename)
+        plt.clf()
+        plt.close()
 
     def setupAgent(self):
 
@@ -229,6 +239,9 @@ class Environment:
         self.currentAgent2Coords[0] = self.agent2StartXY[0]
         self.currentAgent2Coords[1] = self.agent2StartXY[1]
 
+        self.agent1CurrentCollisions = 0
+        self.agent2CurrentCollisions = 0
+
         self.goalReachedA = False
         self.goalReachedB = False
         self.death = False
@@ -248,8 +261,10 @@ class Environment:
         for a in range(self.numAgents):
             if a == 0:
                 self.movesToGoal1.append(stepsTaken)
+                self.agent1Collisions.append(self.agent1CurrentCollisions)
             elif a == 1:
                 self.movesToGoal2.append(stepsTaken)
+                self.agent2Collisions.append(self.agent2CurrentCollisions)
 
     def doTimestep(self):
 
@@ -311,7 +326,8 @@ class Environment:
             file.write(output)
 
     def calc_pbrs_shaping(self, currentAgentCoords, previousAgentCoords):
-        return self.gamma * self.PBRS1[currentAgentCoords[0]][currentAgentCoords[1]] - self.PBRS1[previousAgentCoords[0]][previousAgentCoords[1]]
+        return self.gamma * self.PBRS1[currentAgentCoords[0]][currentAgentCoords[1]] - \
+               self.PBRS1[previousAgentCoords[0]][previousAgentCoords[1]]
 
     def calculateReward(self, currentAgentCoords, agentNum, lava, previousAgentCoords):
 
@@ -389,10 +405,12 @@ class Environment:
             if nextStateXY == self.currentAgent2Coords:
                 nextStateXY = [currentStateXY[0], currentStateXY[1]]
                 self.hitObstacle = True
+                self.agent1CurrentCollisions += 1
         elif agentNum == 1:
             if nextStateXY == self.currentAgent1Coords:
                 nextStateXY = [currentStateXY[0], currentStateXY[1]]
                 self.hitObstacle = True
+                self.agent2CurrentCollisions += 1
 
         return nextStateXY
 
@@ -430,3 +448,9 @@ class Environment:
 
     def getMovesToGoal2(self):
         return self.movesToGoal2
+
+    def getAgent1Collisions(self):
+        return self.agent1Collisions
+
+    def getAgent2Collisions(self):
+        return self.agent2Collisions

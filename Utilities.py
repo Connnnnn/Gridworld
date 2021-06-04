@@ -1,4 +1,5 @@
 import csv
+import matplotlib.pyplot as plt
 
 
 def getXYfromStateNo(stateNo, basesForStateNo):
@@ -86,7 +87,7 @@ def QTablesToFile(QTables1, QTables2, basesForStateNo, experimentName, numAgents
     for e in range(0, len(experiments)):
         output += "*************** Experiment " + str(e + 1) + " ***************\n"
         for run in range(numRuns):
-            output += "*************** Q table for run " + str(run + 1) + " ***************\n"
+            output += "*************** Q table for Run " + str(run + 1) + " ***************\n"
             for a in range(numAgents):
                 output += f"|*************** Agent {a + 1} ***************| \t\t\t\t\t\t\t\t\t\t\t\t\t"
             output += "\n"
@@ -94,3 +95,19 @@ def QTablesToFile(QTables1, QTables2, basesForStateNo, experimentName, numAgents
 
     file = open("out/" + experimentName + "/" + experimentName + "_QTables.txt", "w")
     file.write(output)
+
+
+def CollisionGraphing(collisions, agentNum, numEpisodes, numRuns):
+
+    for i in range(len(collisions)):
+        if i % (numEpisodes*numRuns) == 0 and i != 0:
+            plt.axvline(x=i, ymin=0.05, ymax=0.95, color='black', label='axvline - % of full height')
+
+    plt.title(f'Agent Collisions for Agent {agentNum}')
+    plt.xlabel('Episodes')
+    plt.ylabel('Number of Collisions')
+
+    plt.plot(collisions)
+    plt.show()
+    plt.clf()
+    plt.close()

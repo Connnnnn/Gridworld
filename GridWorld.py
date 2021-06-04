@@ -7,14 +7,16 @@ exp0 = ["Configs/MA2-SD.txt"]
 exp1 = ["Configs/CL/MA-CL-1"]
 expTest = ["Configs/CL/MA-CL-1", "Configs/CL/MA-CL-2"]
 exp2 = ["Configs/CL/MA-CL-1", "Configs/CL/MA-CL-2", "Configs/CL/MA-CL-3", "Configs/CL/MA-CL-4"]
-expCL1To6 = ["Configs/CL/MA-CL-1", "Configs/CL/MA-CL-2", "Configs/CL/MA-CL-3", "Configs/CL/MA-CL-4", "Configs/CL/MA-CL-5", "Configs/CL/MA-CL-6"]
+expCL1To6 = ["Configs/CL/MA-CL-1", "Configs/CL/MA-CL-2", "Configs/CL/MA-CL-3", "Configs/CL/MA-CL-4",
+             "Configs/CL/MA-CL-5", "Configs/CL/MA-CL-6"]
 expOnly6 = ["Configs/CL/MA-CL-6"]
 lavaExp = ["Configs/Lava/MA-Lava-1", "Configs/Lava/MA-Lava-2", "Configs/Lava/MA-Lava-3", "Configs/Lava/MA-Lava-4"]
 
 expOnly5 = ["Configs/CL/MA-CL-5"]
-expCL1To5 = ["Configs/CL/MA-CL-1", "Configs/CL/MA-CL-2", "Configs/CL/MA-CL-3", "Configs/CL/MA-CL-4", "Configs/CL/MA-CL-5"]
+expCL1To5 = ["Configs/CL/MA-CL-1", "Configs/CL/MA-CL-2", "Configs/CL/MA-CL-3", "Configs/CL/MA-CL-4",
+             "Configs/CL/MA-CL-5"]
 
-exp = exp0
+exp = expCL1To6
 
 
 class Grid:
@@ -25,8 +27,11 @@ class Grid:
             QTables1=None,
             QTables2=None,
             numRuns=10,
-            experimentName="Gridworld_" + str(round(time.time() * 1000))
+            experimentName="Gridworld_" + str(round(time.time() * 1000)),
+            agent1Collisions=None,
+            agent2Collisions=None
     ):
+
         if QTables1 is None:
             QTables1 = []
         if QTables2 is None:
@@ -42,6 +47,8 @@ class Grid:
         self.QTables1 = QTables1
         self.QTables2 = QTables2
         self.experimentName = experimentName
+        self.agent1Collisions = agent1Collisions
+        self.agent2Collisions = agent2Collisions
 
     def run(self):
 
@@ -52,6 +59,8 @@ class Grid:
 
         env = Environment()
         env.initialiseAgents(exp)
+        env.agent1Collisions = []
+        env.agent2Collisions = []
 
         for e in range(0, len(exp)):
             print(f"\n*************** Experiment {e + 1} - " + str(exp[e]) + " starting **********")
@@ -66,6 +75,9 @@ class Grid:
 
         self.results1.append(env.getMovesToGoal1())
 
+        self.agent1Collisions = env.getAgent1Collisions()
+        self.agent2Collisions = env.getAgent2Collisions()
+
         resultsToCSVFile(results1=self.results1, experimentName=self.experimentName,
                          numRuns=self.numRuns, numEpisodes=env.numEpisodes, experimentList=exp)
 
@@ -73,6 +85,9 @@ class Grid:
                       basesForStateNo=[Environment.getXDimension(env), Environment.getYDimension(env)],
                       experimentName=self.experimentName, numAgents=env.numAgents, experiments=exp,
                       numRuns=self.numRuns)
+
+        CollisionGraphing(self.agent1Collisions, 1, len(exp), env.numEpisodes, self.numRuns)
+        CollisionGraphing(self.agent2Collisions, 2, len(exp), env.numEpisodes, self.numRuns)
 
 
 if __name__ == '__main__':
