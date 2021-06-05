@@ -1,13 +1,15 @@
 [config]
 xDimensions = 5
 yDimensions = 5
-numEpisodes=1000
-maxTimesteps=100
+numEpisodes=50
+maxTimesteps=1000
 numAgents=2
 alpha=0.3
 alphaDecayRate=0.5
 gamma=0.95
 epsilon=0.2
+alphaDecays=False
+epsilonDecays=True
 epsilonDecayRate=0.5
 agent1StartXY = [4, 0]
 agent2StartXY = [4, 4]

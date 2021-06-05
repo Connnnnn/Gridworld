@@ -1,4 +1,6 @@
 import csv
+import os
+import random
 import matplotlib.pyplot as plt
 
 
@@ -97,10 +99,29 @@ def QTablesToFile(QTables1, QTables2, basesForStateNo, experimentName, numAgents
     file.write(output)
 
 
-def CollisionGraphing(collisions, agentNum, numEpisodes, numRuns):
+def decision(probability):
+    return random.random() < probability
 
+
+def heatmapPrint(Heatmap, run, e, experimentName, agentNum):
+    plt.title(f'Run {run + 1}\n Heatmap Agent {agentNum} - Experiment {e + 1}')
+    plt.imshow(Heatmap, cmap='hot', interpolation='nearest')
+    plt.xlabel('X Axis')
+    plt.ylabel('Y Axis')
+
+    path = "out/" + experimentName + "/Heatmaps/Agent" + str(agentNum) + "/"
+    if not os.path.exists(path):
+        os.makedirs(path)
+
+    filename = path + "Agent" + str(agentNum) + "-Experiment" + str(e + 1) + "Run" + str(run + 1) + ".png"
+    plt.savefig(filename)
+    plt.clf()
+    plt.close()
+
+
+def CollisionGraphing(collisions, agentNum, numEpisodes, numRuns):
     for i in range(len(collisions)):
-        if i % (numEpisodes*numRuns) == 0 and i != 0:
+        if i % (numEpisodes * numRuns) == 0 and i != 0:
             plt.axvline(x=i, ymin=0.05, ymax=0.95, color='black', label='axvline - % of full height')
 
     plt.title(f'Agent Collisions for Agent {agentNum}')
@@ -108,6 +129,42 @@ def CollisionGraphing(collisions, agentNum, numEpisodes, numRuns):
     plt.ylabel('Number of Collisions')
 
     plt.plot(collisions)
+    plt.show()
+    plt.clf()
+    plt.close()
+
+
+def MovesToGoalGraphing(results):
+    plt.title(f'Steps to Goal')
+    plt.xlabel('Episodes')
+    plt.ylabel('Number of Steps')
+
+    plt.plot(results[0])
+    plt.show()
+    plt.clf()
+    plt.close()
+
+
+def ManualGraphMaker():
+
+    map = [
+        [2, 0, 0, 0, 0, 0, 0, 0, 0, 2],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [2, 0, 0, 0, 0, 0, 0, 0, 0, 2],
+    ]
+
+    plt.title(f'Lava Gap Experiment 1')
+    plt.imshow(map, cmap='hot', interpolation='nearest')
+    plt.xlabel('X Axis')
+    plt.ylabel('Y Axis')
+
     plt.show()
     plt.clf()
     plt.close()

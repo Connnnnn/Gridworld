@@ -1,16 +1,8 @@
 import ast
 import configparser
-import os
-
-import matplotlib.pyplot as plt
-
 import PBRSCalculator
 from Agent import *
 from Utilities import *
-
-
-def decision(probability):
-    return random.random() < probability
 
 
 class Environment:
@@ -38,18 +30,18 @@ class Environment:
             death=False,
             numAgents=None,
             debug=True,
-            PBRS=True,
+            PBRS=False,
 
             currentAgent1Coords=None,
             previousAgent1Coords=None,
             currentAgent2Coords=None,
             previousAgent2Coords=None,
             alpha=None,
-            alphaDecays=False,
+            alphaDecays=None,
             alphaDecayRate=None,
             gamma=None,
             epsilon=None,
-            epsilonDecays=False,
+            epsilonDecays=None,
             epsilonDecayRate=None,
             movesToGoal1=None,
             movesToGoal2=None,
@@ -139,26 +131,6 @@ class Environment:
     def initialiseHeatmap(self):
         return [[0 for _ in range(self.xDimension)] for _ in range(self.yDimension)]
 
-    def heatmapPrint(self, run, e, experimentName, agentNum):
-
-        plt.title(f'Run {run + 1}\n Heatmap Agent {agentNum + 1} - Experiment {e + 1}')
-        if agentNum == 0:
-            plt.imshow(self.HeatMapA1, cmap='hot', interpolation='nearest')
-        elif agentNum == 1:
-            plt.imshow(self.HeatMapA2, cmap='hot', interpolation='nearest')
-
-        plt.xlabel('X Axis')
-        plt.ylabel('Y Axis')
-
-        path = "out/" + experimentName + "/Heatmaps/Agent" + str(agentNum + 1) + "/"
-        if not os.path.exists(path):
-            os.makedirs(path)
-
-        filename = path + "Agent" + str(agentNum + 1) + "-Experiment" + str(e + 1) + "Run" + str(run + 1) + ".png"
-        plt.savefig(filename)
-        plt.clf()
-        plt.close()
-
     def setupAgent(self):
 
         numStates = self.getNumStates()
@@ -199,8 +171,8 @@ class Environment:
 
                 file.write(output)
 
-        for a in range(self.numAgents):
-            self.heatmapPrint(run, e, experimentName, a)
+        heatmapPrint(self.HeatMapA1, run, e, experimentName, 1)
+        heatmapPrint(self.HeatMapA2, run, e, experimentName, 2)
 
     def configChange(self, e, exp):
         parser = configparser.ConfigParser()
@@ -209,11 +181,14 @@ class Environment:
         self.xDimension = int(parser.get("config", "xDimensions"))
         self.alpha = float(parser.get("config", "alpha"))
         self.gamma = float(parser.get("config", "gamma"))
+        self.epsilon = float(parser.get("config", "epsilon"))
         self.yDimension = int(parser.get("config", "yDimensions"))
         self.numEpisodes = int(parser.get("config", "numEpisodes"))
         self.maxTimesteps = int(parser.get("config", "maxTimesteps"))
         self.numAgents = int(parser.get("config", "numAgents"))
+        self.alphaDecays = bool(parser.get("config", "alphaDecays"))
         self.alphaDecayRate = float(parser.get("config", "alphaDecayRate"))
+        self.epsilonDecays = bool(parser.get("config", "epsilonDecays"))
         self.epsilonDecayRate = float(parser.get("config", "epsilonDecayRate"))
         self.agent1StartXY = ast.literal_eval(parser.get("config", "agent1StartXY"))
         self.agent2StartXY = ast.literal_eval(parser.get("config", "agent2StartXY"))
@@ -425,7 +400,7 @@ class Environment:
     def decayEpsilon(self):
         if self.epsilonDecays:
             self.epsilon = self.epsilon * self.epsilonDecayRate
-            self.agent.setEpsilon(self.agent, self.epsilon)
+            self.agent.setEpsilon(self.epsilon)
 
     def getQTable(self):
         qTable1 = None

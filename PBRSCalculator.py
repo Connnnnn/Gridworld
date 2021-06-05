@@ -72,8 +72,10 @@ def calc_state_potential(x, y, dest, obstacles, xDim, yDim):
     currDist = dist
     maxDist = xDim * yDim
     pbrs = maxDist - currDist
+
     if pbrs == 101:
-        pbrs = 42
+        pbrs = 0
+
     return pbrs
 
 

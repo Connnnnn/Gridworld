@@ -1,4 +1,3 @@
-import os
 import time
 from Utilities import *
 from Environment import Environment
@@ -10,13 +9,13 @@ exp2 = ["Configs/CL/MA-CL-1", "Configs/CL/MA-CL-2", "Configs/CL/MA-CL-3", "Confi
 expCL1To6 = ["Configs/CL/MA-CL-1", "Configs/CL/MA-CL-2", "Configs/CL/MA-CL-3", "Configs/CL/MA-CL-4",
              "Configs/CL/MA-CL-5", "Configs/CL/MA-CL-6"]
 expOnly6 = ["Configs/CL/MA-CL-6"]
-lavaExp = ["Configs/Lava/MA-Lava-1", "Configs/Lava/MA-Lava-2", "Configs/Lava/MA-Lava-3", "Configs/Lava/MA-Lava-4"]
+lavaExp = ["Configs/Lava/MA-QS-1", "Configs/Lava/MA-QS-2", "Configs/Lava/MA-QS-3", "Configs/Lava/MA-QS-4"]
 
 expOnly5 = ["Configs/CL/MA-CL-5"]
 expCL1To5 = ["Configs/CL/MA-CL-1", "Configs/CL/MA-CL-2", "Configs/CL/MA-CL-3", "Configs/CL/MA-CL-4",
              "Configs/CL/MA-CL-5"]
 
-exp = expCL1To6
+exp = exp0
 
 
 class Grid:
@@ -26,7 +25,7 @@ class Grid:
             results2=None,
             QTables1=None,
             QTables2=None,
-            numRuns=10,
+            numRuns=1,
             experimentName="Gridworld_" + str(round(time.time() * 1000)),
             agent1Collisions=None,
             agent2Collisions=None
@@ -86,8 +85,10 @@ class Grid:
                       experimentName=self.experimentName, numAgents=env.numAgents, experiments=exp,
                       numRuns=self.numRuns)
 
-        CollisionGraphing(self.agent1Collisions, 1, len(exp), env.numEpisodes, self.numRuns)
-        CollisionGraphing(self.agent2Collisions, 2, len(exp), env.numEpisodes, self.numRuns)
+        CollisionGraphing(self.agent1Collisions, 1, env.numEpisodes, self.numRuns)
+        CollisionGraphing(self.agent2Collisions, 2, env.numEpisodes, self.numRuns)
+
+        MovesToGoalGraphing(self.results1)
 
 
 if __name__ == '__main__':
