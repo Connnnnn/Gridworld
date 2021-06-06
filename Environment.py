@@ -23,7 +23,7 @@ class Environment:
             agent2StartXY=None,
             goalReward=10.0,
             stepPenalty=-1.0,
-            lavaPenalty=-2,
+            QSPenalty=-2,
             obstaclePenalty=-2,
             deathPenalty=-10,
             probOfDeath=0.05,
@@ -95,7 +95,7 @@ class Environment:
         self.agent2StartXY = agent2StartXY
         self.goalReward = goalReward
         self.stepPenalty = stepPenalty
-        self.lavaPenalty = lavaPenalty
+        self.QSPenalty = QSPenalty
         self.obstaclePenalty = obstaclePenalty
         self.probOfDeath = probOfDeath
         self.deathPenalty = deathPenalty
@@ -246,8 +246,8 @@ class Environment:
         output = ""
 
         for a in range(self.numAgents):
-            lava1 = False
-            lava2 = False
+            QS1 = False
+            QS2 = False
             if a == 0:
                 currentStateNo = getStateNoFromXY(state=self.currentAgent1Coords,
                                                   basesForStateNo=[self.xDimension, self.yDimension])
@@ -256,9 +256,9 @@ class Environment:
                 self.currentAgent1Coords = self.getNextStateXY(previousAgentCoords, selectedAction, agentNum=a)
 
                 if self.obstacles[self.currentAgent1Coords[0]][self.currentAgent1Coords[1]] == 2:
-                    lava1 = True
+                    QS1 = True
 
-                reward = self.calculateReward(self.currentAgent1Coords, a, lava1, previousAgentCoords)
+                reward = self.calculateReward(self.currentAgent1Coords, a, QS1, previousAgentCoords)
 
                 nextStateNo = getStateNoFromXY(state=self.currentAgent1Coords,
                                                basesForStateNo=[self.xDimension, self.yDimension])
@@ -281,9 +281,9 @@ class Environment:
                 self.currentAgent2Coords = self.getNextStateXY(previousAgentCoords, selectedAction, a)
 
                 if self.obstacles[self.currentAgent2Coords[0]][self.currentAgent2Coords[1]] == 2:
-                    lava2 = True
+                    QS2 = True
 
-                reward = self.calculateReward(self.currentAgent2Coords, a, lava2, previousAgentCoords)
+                reward = self.calculateReward(self.currentAgent2Coords, a, QS2, previousAgentCoords)
 
                 nextStateNo = getStateNoFromXY(state=self.currentAgent2Coords,
                                                basesForStateNo=[self.xDimension, self.yDimension])
@@ -304,7 +304,7 @@ class Environment:
         return self.gamma * self.PBRS1[currentAgentCoords[0]][currentAgentCoords[1]] - \
                self.PBRS1[previousAgentCoords[0]][previousAgentCoords[1]]
 
-    def calculateReward(self, currentAgentCoords, agentNum, lava, previousAgentCoords):
+    def calculateReward(self, currentAgentCoords, agentNum, QS, previousAgentCoords):
 
         reward = 0
         if agentNum == 0:
@@ -314,8 +314,8 @@ class Environment:
                 self.goalReachedA = True
             elif self.hitObstacle is True:
                 reward = self.obstaclePenalty
-            elif lava is True:
-                reward = self.lavaPenalty
+            elif QS is True:
+                reward = self.QSPenalty
                 if decision(self.probOfDeath):
                     reward = -10
                     self.death = True
@@ -329,8 +329,8 @@ class Environment:
                 self.goalReachedB = True
             elif self.hitObstacle is True:
                 reward = self.obstaclePenalty
-            elif lava is True:
-                reward = self.lavaPenalty
+            elif QS is True:
+                reward = self.QSPenalty
                 if decision(self.probOfDeath):
                     reward = 0
                     self.death = True

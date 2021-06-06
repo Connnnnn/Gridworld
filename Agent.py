@@ -61,20 +61,8 @@ class Agent:
             oldQ = self.qTable1[previousState][selectedAction]
             maxQ = self.getMaxQValue(currentState, agent)
             newQ = oldQ + env.alpha * (reward + (env.gamma * maxQ) - oldQ)
-
-            # print("Max Q =" + str(str(maxQ)))
-            # print("Alpha = " + str(env.alpha))
-            # print("Gamma = " + str(env.gamma))
-            # print("Old Q = " + str(oldQ))
-            # print("Previous state "+str(previousState))
-            # print("selected action "+str(selectedAction))
-            # print("Curr state " + str(currentState))
-            # print("Reward " + str(reward))
-
-            # print(newQ)
-            # print("Old QTable -  " + str(self.qTable))
-
             self.qTable1[previousState][selectedAction] = newQ
+
         elif agent == 1:
             oldQ = self.qTable2[previousState][selectedAction]
             maxQ = self.getMaxQValue(currentState, agent)

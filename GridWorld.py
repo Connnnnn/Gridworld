@@ -9,7 +9,7 @@ exp2 = ["Configs/CL/MA-CL-1", "Configs/CL/MA-CL-2", "Configs/CL/MA-CL-3", "Confi
 expCL1To6 = ["Configs/CL/MA-CL-1", "Configs/CL/MA-CL-2", "Configs/CL/MA-CL-3", "Configs/CL/MA-CL-4",
              "Configs/CL/MA-CL-5", "Configs/CL/MA-CL-6"]
 expOnly6 = ["Configs/CL/MA-CL-6"]
-lavaExp = ["Configs/Lava/MA-QS-1", "Configs/Lava/MA-QS-2", "Configs/Lava/MA-QS-3", "Configs/Lava/MA-QS-4"]
+QSExp = ["Configs/QS/MA-QS-1", "Configs/QS/MA-QS-2", "Configs/QS/MA-QS-3", "Configs/QS/MA-QS-4"]
 
 expOnly5 = ["Configs/CL/MA-CL-5"]
 expCL1To5 = ["Configs/CL/MA-CL-1", "Configs/CL/MA-CL-2", "Configs/CL/MA-CL-3", "Configs/CL/MA-CL-4",

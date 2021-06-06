@@ -160,7 +160,7 @@ def ManualGraphMaker():
         [2, 0, 0, 0, 0, 0, 0, 0, 0, 2],
     ]
 
-    plt.title(f'Lava Gap Experiment 1')
+    plt.title(f'Quick Sand Experiment 4')
     plt.imshow(map, cmap='hot', interpolation='nearest')
     plt.xlabel('X Axis')
     plt.ylabel('Y Axis')
